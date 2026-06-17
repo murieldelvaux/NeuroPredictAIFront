@@ -1,586 +1,537 @@
 /**
- * NeuroPredict AI - Clinical Workflow Wizard Step-by-Step
+ * NeuroPredict AI - Clinical Workflow Ingestion Stepper styled with Material-UI
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { 
-  User, 
-  FileText, 
-  Sliders, 
-  Brain, 
-  Cpu, 
-  Grid, 
-  ArrowLeft, 
-  ArrowRight, 
-  CheckCircle,
-  Activity,
-  AlertCircle,
-  HelpCircle,
-  Clock,
-  Terminal
-} from 'lucide-react';
-import { PatientDemographics, ClinicalHistory } from '../types';
-
-interface ClinicalWorkflowProps {
-  onSave: (data: {
-    demographics: Omit<PatientDemographics, 'id'>;
-    history: ClinicalHistory;
-    cognitive: { mmse: number; moca: number; cdr: number };
-    imaging?: { scanType: string; scanDate: string; radiologistNotes: string; fileUploaded?: string };
-  }) => void;
-  isSaving: boolean;
-  onCancel: () => void;
-}
+  Box, 
+  Card, 
+  CardContent, 
+  Typography, 
+  Button, 
+  TextField, 
+  Select, 
+  MenuItem, 
+  Checkbox, 
+  FormControlLabel, 
+  Stepper, 
+  Step, 
+  StepLabel, 
+  LinearProgress, 
+  Chip,
+  Divider,
+  Paper,
+  InputLabel,
+  FormControl,
+  CircularProgress,
+  useTheme
+} from '@mui/material';
+import { 
+  ArrowBack as ArrowLeftIcon, 
+  ArrowForward as ArrowRightIcon, 
+  CheckCircle as CheckIcon, 
+  MedicalServices as SymptomsIcon, 
+  Person as DemographicIcon, 
+  Psychology as AssessmentIcon, 
+  Image as BrainIcon,
+  Memory as ProcessorIcon,
+  ListAlt as ReviewIcon,
+  Add as AddIcon,
+  Terminal as TerminalIcon,
+  Security as GuardIcon
+} from '@mui/icons-material';
+import { ClinicalWorkflowProps } from '../types/components';
+import { useClinicalWorkflow } from '../hooks/useClinicalWorkflow';
 
 export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: ClinicalWorkflowProps) {
-  const [step, setStep] = useState<number>(1);
+  const theme = useTheme();
 
-  // STEP 1 State: Demographics
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [age, setAge] = useState<number>(70);
-  const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male');
-  const [dob, setDob] = useState('1956-06-20');
-  const [mrn, setMrn] = useState(`MRN-${Math.floor(10000 + Math.random() * 90000)}-${Math.floor(10 + Math.random() * 89)}Z`);
-  const [educationYears, setEducationYears] = useState<number>(14);
+  // Load state and logic out of presenter
+  const {
+    step,
+    setStep,
+    firstName,
+    setFirstName,
+    lastName,
+    setLastName,
+    age,
+    setAge,
+    gender,
+    setGender,
+    dob,
+    setDob,
+    mrn,
+    educationYears,
+    setEducationYears,
+    symptomsInput,
+    setSymptomsInput,
+    symptomsList,
+    addSymptom,
+    removeSymptom,
+    selectedRiskFactors,
+    toggleRiskFactor,
+    selectedComorbidities,
+    toggleComorbidity,
+    medicationsInput,
+    setMedicationsInput,
+    medicationsList,
+    addMedication,
+    removeMedication,
+    mmseScore,
+    setMmseScore,
+    mocaScore,
+    setMocaScore,
+    cdrScore,
+    setCdrScore,
+    scanType,
+    setScanType,
+    scanDate,
+    setScanDate,
+    radiologistNotes,
+    setRadiologistNotes,
+    customFileUploaded,
+    setCustomFileUploaded,
+    simulationPercentage,
+    simulationRunning,
+    terminalLogs,
+    runAIPipeline,
+    submitWorkflow,
+  } = useClinicalWorkflow(onSave);
 
-  // STEP 2 State: Clinical History
-  const [symptomsInput, setSymptomsInput] = useState<string>('');
-  const [symptomsList, setSymptomsList] = useState<string[]>([
-    "Mild word retrieval delays",
-    "Subjective short term recall deficits"
-  ]);
-  const [hasFamilyHistory, setHasFamilyHistory] = useState<boolean>(true);
-  const [familyRelation, setFamilyRelation] = useState<string>('Grandmother');
-  const [dementiaCount, setDementiaCount] = useState<number>(1);
-  const [selectedRiskFactors, setSelectedRiskFactors] = useState<string[]>(["ApoE4 positive (ε3/ε4)"]);
-  const [selectedComorbidities, setSelectedComorbidities] = useState<string[]>(["Hypertension"]);
-  const [medicationsInput, setMedicationsInput] = useState<string>('');
-  const [medicationsList, setMedicationsList] = useState<string[]>(["Lisinopril 10mg daily"]);
-
-  // STEP 3 State: Cognitive Tests
-  const [mmseScore, setMmseScore] = useState<number>(24);
-  const [mocaScore, setMocaScore] = useState<number>(22);
-  const [cdrScore, setCdrScore] = useState<number>(0.5);
-
-  // STEP 4 State: Imaging Details
-  const [scanType, setScanType] = useState<'MRI 3T' | 'PET-FDG' | 'CT Scan'>('MRI 3T');
-  const [scanDate, setScanDate] = useState('2026-06-10');
-  const [radiologistNotes, setRadiologistNotes] = useState('Subcortical vascular parameters are constant. No distinct cortical anomalies reported.');
-  const [customFileUploaded, setCustomFileUploaded] = useState<string | null>(null);
-
-  // STEP 5 State: AI Analysis Simulation & Terminal logs
-  const [simulationPercentage, setSimulationPercentage] = useState<number>(0);
-  const [simulationRunning, setSimulationRunning] = useState<boolean>(false);
-  const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
-
-  // Helpers for list additions
-  const addSymptom = () => {
-    if (symptomsInput.trim()) {
-      setSymptomsList([...symptomsList, symptomsInput.trim()]);
-      setSymptomsInput('');
-    }
-  };
-
-  const removeSymptom = (idx: number) => {
-    setSymptomsList(symptomsList.filter((_, i) => i !== idx));
-  };
-
-  const addMedication = () => {
-    if (medicationsInput.trim()) {
-      setMedicationsList([...medicationsList, medicationsInput.trim()]);
-      setMedicationsInput('');
-    }
-  };
-
-  const removeMedication = (idx: number) => {
-    setMedicationsList(medicationsList.filter((_, i) => i !== idx));
-  };
-
-  const toggleRiskFactor = (factor: string) => {
-    if (selectedRiskFactors.includes(factor)) {
-      setSelectedRiskFactors(selectedRiskFactors.filter(f => f !== factor));
-    } else {
-      setSelectedRiskFactors([...selectedRiskFactors, factor]);
-    }
-  };
-
-  const toggleComorbidity = (item: string) => {
-    if (selectedComorbidities.includes(item)) {
-      setSelectedComorbidities(selectedComorbidities.filter(c => c !== item));
-    } else {
-      setSelectedComorbidities([...selectedComorbidities, item]);
-    }
-  };
-
-  // Run Simulated PyTorch & MONAI diagnostics pipeline
-  const runAIPipeline = () => {
-    setSimulationRunning(true);
-    setSimulationPercentage(10);
-    setTerminalLogs([
-      "[SYSTEM] Initializing clinical telemetry handshake...",
-      "[SYSTEM] Merging Patient Demographics: Age 70, Education 14y.",
-      `[DATABASE] Registered diagnostic target under ${mrn}`
-    ]);
-
-    const steps = [
-      { p: 25, log: "[CORE] Parsing MMSE (24) vs MoCA (22) cognitive scales..." },
-      { p: 40, log: "[CORE] Calibrating ApoE biomarker weights..." },
-      { p: 60, log: "[IMAGING] Standardizing coronal cross-slices to 256x256 voxel tensor..." },
-      { p: 75, log: "[ML-ENGINE] Deploying PyTorch late-onset diagnostic classifier models..." },
-      { p: 90, log: "[SHAP] Backpropagating attribution gradients..." },
-      { p: 100, log: "[SYSTEM] Diagnostic interpretation matrix finalized successfully." }
-    ];
-
-    steps.forEach((stepItem, index) => {
-      setTimeout(() => {
-        setSimulationPercentage(stepItem.p);
-        setTerminalLogs(prev => [...prev, stepItem.log]);
-        if (stepItem.p === 100) {
-          setSimulationRunning(false);
-          setStep(6); // automatically transition to Results Review!
-        }
-      }, (index + 1) * 800);
-    });
-  };
-
-  // Steps headers for stepper component
+  // Labels & Icons for stepper
   const stepsMetadata = [
-    { num: 1, label: 'Patient Information', icon: User },
-    { num: 2, label: 'Clinical History', icon: FileText },
-    { num: 3, label: 'Cognitive Tests', icon: Sliders },
-    { num: 4, label: 'Imaging Details', icon: Brain },
-    { num: 5, label: 'AI Processor Request', icon: Cpu },
-    { num: 6, label: 'Results Review', icon: Grid }
+    { label: 'Patient Demographics' },
+    { label: 'Clinical History' },
+    { label: 'Cognitive Assessments' },
+    { label: 'Neuroimaging Metadata' },
+    { label: 'AI Processor Request' },
+    { label: 'Confirm Results' }
   ];
 
-  const handleCreateAndSave = () => {
-    onSave({
-      demographics: {
-        name: `${firstName} ${lastName}`.trim() || "Anonymous Patient",
-        age,
-        gender,
-        mrn,
-        dob,
-        phone: "(555) 019-2091",
-        email: `${firstName.toLowerCase()}.${lastName.toLowerCase()}@healthops.org`,
-        educationYears
-      },
-      history: {
-        symptoms: symptomsList,
-        familyHistory: {
-          alzheimersRelation: hasFamilyHistory ? [familyRelation] : [],
-          dementiaCount: hasFamilyHistory ? dementiaCount : 0
-        },
-        riskFactors: selectedRiskFactors,
-        comorbidities: selectedComorbidities,
-        medications: medicationsList
-      },
-      cognitive: {
-        mmse: mmseScore,
-        moca: mocaScore,
-        cdr: cdrScore
-      },
-      imaging: {
-        scanType,
-        scanDate,
-        radiologistNotes,
-        fileUploaded: customFileUploaded || undefined
-      }
-    });
-  };
-
   return (
-    <div className="space-y-8 bg-white border border-slate-200 p-8 rounded-2xl shadow-xs" id="workflow-wizard-wrapper">
-      
-      {/* Header bar and button */}
-      <div className="flex justify-between items-center border-b border-slate-100 pb-5" id="workflow-header-panel">
-        <div>
-          <h2 className="text-xl font-display font-semibold text-slate-900 tracking-tight">Active Patient Acquisition Intake</h2>
-          <p className="text-xs text-slate-500 mt-1">Guided multimodality data ingestion matching HIPAA rules.</p>
-        </div>
-        <button
-          id="btn-cancel-acquisition"
+    <Paper variant="outlined" id="workflow-wizard-wrapper" sx={{ p: { xs: 2.5, md: 4 }, borderRadius: 3, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
+      {/* Header Panel */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          borderBottom: 1, 
+          borderColor: 'divider',
+          pb: 2 
+        }} 
+        id="workflow-header-panel"
+      >
+        <Box>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Active Patient Acquisition Intake</Typography>
+          <Typography variant="caption" sx={{ display: 'block' }} color="text.secondary">Guided multimodality data ingestion matching HIPAA rules.</Typography>
+        </Box>
+        <Button 
+          variant="outlined" 
+          color="inherit" 
+          size="small" 
           onClick={onCancel}
-          className="text-xs font-semibold text-slate-500 hover:text-slate-800 border border-slate-200 px-4 py-2 rounded-xl hover:bg-slate-50 cursor-pointer"
+          id="btn-cancel-acquisition"
+          sx={{ fontSize: '11px', textTransform: 'none', fontWeight: 'bold', borderColor: 'divider' }}
         >
           Abandon Evaluation
-        </button>
-      </div>
+        </Button>
+      </Box>
 
-      {/* Stepper progress indicator list */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3 pb-4" id="workflow-progress-stepper">
-        {stepsMetadata.map((stepMeta) => {
-          const Icon = stepMeta.icon;
-          const isDone = step > stepMeta.num;
-          const isActive = step === stepMeta.num;
+      {/* Stepper Wizard Progress Indicators */}
+      <Box id="workflow-progress-stepper" sx={{ width: '100%', py: 1 }}>
+        <Stepper activeStep={step - 1} alternativeLabel={true}>
+          {stepsMetadata.map((meta, index) => (
+            <Step key={index}>
+              <StepLabel 
+                slotProps={{
+                  stepIcon: {
+                    sx: {
+                      color: index + 1 === step ? 'primary.main' : index + 1 < step ? '#10b981' : 'divider'
+                    }
+                  }
+                }}
+              >
+                <Typography variant="caption" sx={{ display: { xs: 'none', sm: 'block' }, fontWeight: index + 1 === step ? 'bold' : 'normal' }}>
+                  {meta.label}
+                </Typography>
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+      </Box>
 
-          return (
-            <div 
-              key={stepMeta.num}
-              className={`p-3.5 rounded-xl border flex items-center space-x-2.5 transition-all text-left ${
-                isActive 
-                  ? 'border-slate-900 bg-slate-900 text-teal-400 font-bold' 
-                  : isDone 
-                    ? 'border-emerald-200 bg-emerald-500/5 text-emerald-700' 
-                    : 'border-slate-100 bg-slate-50/50 text-slate-400'
-              }`}
-              id={`stepper-node-${stepMeta.num}`}
-            >
-              <div className={`w-6 h-6 rounded-lg text-xs flex items-center justify-center font-bold font-mono ${
-                isActive ? 'bg-teal-400 text-slate-950' : isDone ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500'
-              }`}>
-                {stepMeta.num}
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-[10px] font-mono leading-none font-bold uppercase tracking-wide">Step {stepMeta.num}</p>
-                <p className="text-xs font-semibold mt-0.5 truncate max-w-[100px] text-current">{stepMeta.label}</p>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* STEP 1: Demographics */}
+      {/* STEP 1: Demographics Ingestion */}
       {step === 1 && (
-        <div className="space-y-6" id="workflow-step-one">
-          <div className="flex items-center space-x-2 text-slate-700 border-b border-slate-100 pb-3">
-            <User className="w-5 h-5 text-teal-600" />
-            <h3 className="font-semibold text-base">Step 1: Patient Demographic Variables</h3>
-          </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-one">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
+            <DemographicIcon sx={{ color: 'primary.main' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 1: Patient Demographic Variables</Typography>
+          </Box>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="demographics-form-fields">
-            <div>
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="input-first-name">FIRST NAME</label>
-              <input
-                id="input-first-name"
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Arthur"
-                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500/25 focus:bg-white font-semibold"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="input-last-name">LAST NAME</label>
-              <input
-                id="input-last-name"
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                placeholder="Pendelton"
-                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500/25 focus:bg-white font-semibold"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="input-age">AGE (YEARS)</label>
-              <input
-                id="input-age"
-                type="number"
-                min="50"
-                max="110"
-                value={age}
-                onChange={(e) => setAge(parseInt(e.target.value))}
-                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500/25 focus:bg-white font-semibold"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="select-gender">BIOLOGICAL GENDER</label>
-              <select
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }} id="demographics-form-fields">
+            <TextField 
+              required
+              id="input-first-name" 
+              label="FIRST NAME" 
+              variant="outlined" 
+              fullWidth 
+              size="small"
+              value={firstName} 
+              onChange={(e) => setFirstName(e.target.value)}
+              placeholder="Arthur"
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <TextField 
+              required
+              id="input-last-name" 
+              label="LAST NAME" 
+              variant="outlined" 
+              fullWidth 
+              size="small"
+              value={lastName} 
+              onChange={(e) => setLastName(e.target.value)}
+              placeholder="Pendelton"
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <TextField 
+              id="input-age" 
+              label="AGE (YEARS)" 
+              type="number" 
+              variant="outlined" 
+              fullWidth 
+              size="small"
+              value={age} 
+              onChange={(e) => setAge(Math.max(1, parseInt(e.target.value) || 0))}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <FormControl fullWidth size="small">
+              <InputLabel id="select-gender-label">BIOLOGICAL GENDER</InputLabel>
+              <Select
+                labelId="select-gender-label"
                 id="select-gender"
                 value={gender}
+                label="BIOLOGICAL GENDER"
                 onChange={(e: any) => setGender(e.target.value)}
-                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500/25 focus:bg-white font-semibold"
               >
-                <option value="Male">Male</option>
-                <option value="Female">Female</option>
-                <option value="Other">Other</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="input-dob">DATE OF BIRTH</label>
-              <input
-                id="input-dob"
-                type="date"
-                value={dob}
-                onChange={(e) => setDob(e.target.value)}
-                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500/25 focus:bg-white font-semibold"
-              />
-            </div>
-
-            <div>
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="input-education">FORMAL EDUCATION YEARS</label>
-              <input
-                id="input-education"
-                type="number"
-                min="0"
-                max="30"
-                value={educationYears}
-                onChange={(e) => setEducationYears(parseInt(e.target.value))}
-                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500/25 focus:bg-white font-semibold"
-              />
-            </div>
-          </div>
-        </div>
+                <MenuItem value="Male">Male</MenuItem>
+                <MenuItem value="Female">Female</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField 
+              id="input-dob" 
+              label="DATE OF BIRTH" 
+              type="date" 
+              variant="outlined" 
+              fullWidth 
+              size="small"
+              value={dob} 
+              onChange={(e) => setDob(e.target.value)}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+            <TextField 
+              id="input-education" 
+              label="FORMAL EDUCATION YEARS" 
+              type="number" 
+              variant="outlined" 
+              fullWidth 
+              size="small"
+              value={educationYears} 
+              onChange={(e) => setEducationYears(Math.max(0, parseInt(e.target.value) || 0))}
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
+          </Box>
+        </Box>
       )}
 
-      {/* STEP 2: Clinical History */}
+      {/* STEP 2: Clinical Symptoms & History Ingestion */}
       {step === 2 && (
-        <div className="space-y-6" id="workflow-step-two">
-          <div className="flex items-center space-x-2 text-slate-700 border-b border-slate-100 pb-3">
-            <FileText className="w-5 h-5 text-teal-600" />
-            <h3 className="font-semibold text-base">Step 2: Medical Symptoms & Risk Profilers</h3>
-          </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-two">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
+            <SymptomsIcon sx={{ color: 'primary.main' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 2: Medical Symptoms & Risk Profilers</Typography>
+          </Box>
 
-          <div className="space-y-6" id="clinical-history-form">
-            {/* Symptoms lists inputs */}
-            <div id="wrapper-symptoms-input-block">
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="input-symptom-tag">PRESENTING SYMPTOMS</label>
-              <div className="flex gap-2">
-                <input
+          <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }} id="clinical-history-form">
+            {/* Presenting Symptoms Tags list */}
+            <Box id="wrapper-symptoms-input-block">
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', mb: 1, display: 'block' }}>
+                PRESENTING SYMPTOMS
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
+                <TextField 
+                  fullWidth 
+                  size="small" 
+                  placeholder="e.g. Mild word retrieval delays, subjective short term recall deficits"
+                  value={symptomsInput} 
                   id="input-symptom-tag"
-                  type="text"
-                  placeholder="e.g. Mild spatial disorientation, difficulty naming standard animals..."
-                  value={symptomsInput}
                   onChange={(e) => setSymptomsInput(e.target.value)}
-                  className="flex-1 bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500/25 focus:bg-white font-semibold"
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addSymptom())}
                 />
-                <button
-                  id="btn-add-symptom"
-                  type="button"
+                <Button 
+                  variant="contained" 
+                  color="secondary" 
                   onClick={addSymptom}
-                  className="bg-slate-900 text-white rounded-xl px-4 text-xs font-bold hover:bg-slate-800"
+                  startIcon={<AddIcon />}
+                  id="btn-add-symptom"
+                  sx={{ shrink: 0 }}
                 >
                   Add
-                </button>
-              </div>
-
-              {symptomsList.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-3" id="added-symptoms-chips">
-                  {symptomsList.map((tag, i) => (
-                    <span key={i} className="bg-slate-100 text-slate-800 px-2.5 py-1 text-[11px] font-bold rounded-lg flex items-center space-x-1.5 border border-slate-200">
-                      <span>{tag}</span>
-                      <button id={`btn-del-symptom-${i}`} onClick={() => removeSymptom(i)} className="text-slate-400 hover:text-red-600 font-bold">×</button>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Genetics Heredity checkbox */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="history-checkbox-grid">
+                </Button>
+              </Box>
               
-              {/* Risk list checkboxes */}
-              <div className="border border-slate-100 rounded-xl p-5 bg-slate-50/20" id="card-genetic-selections">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-3">ApoE Biomarker configuration</span>
-                <div className="space-y-2">
+              {symptomsList.length > 0 && (
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }} id="added-symptoms-chips">
+                  {symptomsList.map((tag, i) => (
+                    <Chip 
+                      key={i} 
+                      label={tag} 
+                      size="small" 
+                      onDelete={() => removeSymptom(i)}
+                      id={`btn-del-symptom-${i}`}
+                      sx={{ fontWeight: 'bold' }}
+                    />
+                  ))}
+                </Box>
+              )}
+            </Box>
+
+            {/* Heredity Risk Biomarkers / Comorbidities CSS Grid Box */}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3.5 }} id="history-checkbox-grid">
+              <Paper variant="outlined" sx={{ p: 2, bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }} id="card-genetic-selections">
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: '800', mb: 1.5 }}>
+                  APOE BIOMARKER & GENETIC CHARACTERISTICS
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   {[
                     "ApoE4 positive (ε3/ε4)",
                     "ApoE4 positive (ε4/ε4)",
                     "Family history of early onset AD",
                     "Sedentary lifestyle habits"
                   ].map(f => (
-                    <label key={f} className="flex items-center space-x-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedRiskFactors.includes(f)}
-                        onChange={() => toggleRiskFactor(f)}
-                        className="rounded accent-slate-900"
-                      />
-                      <span>{f}</span>
-                    </label>
+                    <FormControlLabel
+                      key={f}
+                      control={<Checkbox size="small" checked={selectedRiskFactors.includes(f)} onChange={() => toggleRiskFactor(f)} />}
+                      label={<Typography variant="body2">{f}</Typography>}
+                    />
                   ))}
-                </div>
-              </div>
+                </Box>
+              </Paper>
 
-              {/* Comorbidities checkboxes */}
-              <div className="border border-slate-100 rounded-xl p-5 bg-slate-50/20" id="card-comorbidities-selections">
-                <span className="text-xs font-bold text-slate-500 uppercase tracking-widest block mb-3">Global Comorbidities</span>
-                <div className="space-y-2">
+              <Paper variant="outlined" sx={{ p: 2, bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }} id="card-comorbidities-selections">
+                <Typography variant="body2" color="text.secondary" sx={{ fontWeight: '800', mb: 1.5 }}>
+                  GLOBAL COMORBIDITIES
+                </Typography>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   {[
                     "Hypertension",
                     "Type 2 Diabetes mellitus",
                     "Hypercholesterolemia",
                     "Chronic Kidney Disease"
                   ].map(c => (
-                    <label key={c} className="flex items-center space-x-2.5 text-xs font-semibold text-slate-700 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={selectedComorbidities.includes(c)}
-                        onChange={() => toggleComorbidity(c)}
-                        className="rounded accent-slate-900"
-                      />
-                      <span>{c}</span>
-                    </label>
+                    <FormControlLabel
+                      key={c}
+                      control={<Checkbox size="small" checked={selectedComorbidities.includes(c)} onChange={() => toggleComorbidity(c)} />}
+                      label={<Typography variant="body2">{c}</Typography>}
+                    />
                   ))}
-                </div>
-              </div>
+                </Box>
+              </Paper>
+            </Box>
 
-            </div>
-
-            {/* Meds details list */}
-            <div id="wrapper-medications-input-block">
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="input-med-tag">PRESCRIBED MEDICATIONS</label>
-              <div className="flex gap-2">
-                <input
+            {/* Prescribed Medications tag list */}
+            <Box id="wrapper-medications-input-block">
+              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', mb: 1, display: 'block' }}>
+                PRESCRIBED MEDICATIONS
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1.5 }}>
+                <TextField 
+                  fullWidth 
+                  size="small" 
+                  placeholder="e.g. Donepezil 10mg once daily at bedtime"
+                  value={medicationsInput} 
                   id="input-med-tag"
-                  type="text"
-                  placeholder="e.g. Donepezil 10mg once daily at bedtime..."
-                  value={medicationsInput}
                   onChange={(e) => setMedicationsInput(e.target.value)}
-                  className="flex-1 bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden focus:ring-2 focus:ring-teal-500/25 focus:bg-white font-semibold"
+                  onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addMedication())}
                 />
-                <button
-                  id="btn-add-medication"
-                  type="button"
+                <Button 
+                  variant="contained" 
+                  color="secondary" 
                   onClick={addMedication}
-                  className="bg-slate-900 text-white rounded-xl px-4 text-xs font-bold hover:bg-slate-800"
+                  startIcon={<AddIcon />}
+                  id="btn-add-medication"
+                  sx={{ shrink: 0 }}
                 >
                   Add
-                </button>
-              </div>
-
+                </Button>
+              </Box>
+              
               {medicationsList.length > 0 && (
-                <div className="flex flex-wrap gap-1.5 mt-3" id="added-meds-chips">
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }} id="added-meds-chips">
                   {medicationsList.map((tag, i) => (
-                    <span key={i} className="bg-slate-100 text-slate-800 px-2.5 py-1 text-[11px] font-bold rounded-lg flex items-center space-x-1.5 border border-slate-200">
-                      <span>{tag}</span>
-                      <button id={`btn-del-med-${i}`} onClick={() => removeMedication(i)} className="text-slate-400 hover:text-red-600 font-bold font-mono">×</button>
-                    </span>
+                    <Chip 
+                      key={i} 
+                      label={tag} 
+                      size="small" 
+                      onDelete={() => removeMedication(i)}
+                      id={`btn-del-med-${i}`}
+                      sx={{ fontWeight: 'bold' }}
+                    />
                   ))}
-                </div>
+                </Box>
               )}
-            </div>
-
-          </div>
-        </div>
+            </Box>
+          </Box>
+        </Box>
       )}
 
-      {/* STEP 3: Cognitive tests scores */}
+      {/* STEP 3: Cognitive Tests Scores */}
       {step === 3 && (
-        <div className="space-y-6" id="workflow-step-three">
-          <div className="flex items-center space-x-2 text-slate-700 border-b border-slate-100 pb-3">
-            <Sliders className="w-5 h-5 text-teal-600" />
-            <h3 className="font-semibold text-base">Step 3: Quantitative Cognitive Assessments</h3>
-          </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-three">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
+            <AssessmentIcon sx={{ color: 'primary.main' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 3: Quantitative Cognitive Assessments</Typography>
+          </Box>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8" id="cognitive-scales-fields">
-            {/* MMSE */}
-            <div className="bg-slate-50/45 border border-slate-200/60 p-6 rounded-2xl" id="input-range-mmse">
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-bold text-slate-700" htmlFor="score-mmse">MMSE SCORE</label>
-                <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-mono">0 - 30</span>
-              </div>
-              <input
-                id="score-mmse"
-                type="number"
-                min="0"
-                max="30"
-                value={mmseScore}
-                onChange={(e) => setMmseScore(Math.min(30, Math.max(0, parseInt(e.target.value) || 0)))}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold h-11"
-              />
-              <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
-                Mini-Mental State Exam. Baseline standards classify &lt;24 as symptomatic.
-              </p>
-            </div>
+          <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3.5 }} id="cognitive-scales-fields">
+            {/* MMSE Card */}
+            <Card variant="outlined" id="input-range-mmse">
+              <CardContent sx={{ p: 2.5 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>MMSE SCORE</Typography>
+                  <Chip label="Scale: 0-30" size="small" variant="filled" sx={{ height: 18, fontSize: '9px', fontWeight: 'bold' }} />
+                </Box>
+                <TextField 
+                  type="number" 
+                  fullWidth 
+                  size="small"
+                  value={mmseScore} 
+                  id="score-mmse"
+                  onChange={(e) => setMmseScore(Math.min(30, Math.max(0, parseInt(e.target.value) || 0)))}
+                  slotProps={{ htmlInput: { min: 0, max: 30 } }}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, lineHeight: 1.4 }}>
+                  Mini-Mental State Exam. Baseline standards classify index scores &lt;24 as symptomatic deficits.
+                </Typography>
+              </CardContent>
+            </Card>
 
-            {/* MoCA */}
-            <div className="bg-slate-50/45 border border-slate-200/60 p-6 rounded-2xl" id="input-range-moca">
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-bold text-slate-700" htmlFor="score-moca">MOCA SCORE</label>
-                <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-mono">0 - 30</span>
-              </div>
-              <input
-                id="score-moca"
-                type="number"
-                min="0"
-                max="30"
-                value={mocaScore}
-                onChange={(e) => setMocaScore(Math.min(30, Math.max(0, parseInt(e.target.value) || 0)))}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold h-11"
-              />
-              <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
-                Montreal Cognitive Assessment. Highly responsive to initial executive latencies.
-              </p>
-            </div>
+            {/* MOCA Card */}
+            <Card variant="outlined" id="input-range-moca">
+              <CardContent sx={{ p: 2.5 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>MOCA SCORE</Typography>
+                  <Chip label="Scale: 0-30" size="small" variant="filled" sx={{ height: 18, fontSize: '9px', fontWeight: 'bold' }} />
+                </Box>
+                <TextField 
+                  type="number" 
+                  fullWidth 
+                  size="small"
+                  value={mocaScore} 
+                  id="score-moca"
+                  onChange={(e) => setMocaScore(Math.min(30, Math.max(0, parseInt(e.target.value) || 0)))}
+                  slotProps={{ htmlInput: { min: 0, max: 30 } }}
+                />
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, lineHeight: 1.4 }}>
+                  Montreal Cognitive Assessment. Highly responsive to initial executive latencies & working memory.
+                </Typography>
+              </CardContent>
+            </Card>
 
-            {/* CDR */}
-            <div className="bg-slate-50/45 border border-slate-200/60 p-6 rounded-2xl" id="input-range-cdr">
-              <div className="flex justify-between items-center mb-2">
-                <label className="text-xs font-bold text-slate-700" htmlFor="score-cdr">CDR SCORE INDEX</label>
-                <span className="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded font-mono">Scores: 0, 0.5, 1, 2, 3</span>
-              </div>
-              <select
-                id="score-cdr"
-                value={cdrScore}
-                onChange={(e: any) => setCdrScore(parseFloat(e.target.value))}
-                className="w-full bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-sm font-bold h-11 focus:outline-hidden"
-              >
-                <option value="0">0.0 (Normal)</option>
-                <option value="0.5">0.5 (Very Mild / Prodromal)</option>
-                <option value="1">1.0 (Mild Dementia)</option>
-                <option value="2">2.0 (Moderate Dementia)</option>
-                <option value="3">3.0 (Severe Dementia)</option>
-              </select>
-              <p className="text-[10px] text-slate-400 mt-2 leading-relaxed">
-                Clinical Dementia Rating. Sourced via caregiver semi-structured interviews.
-              </p>
-            </div>
-          </div>
-        </div>
+            {/* CDR Card */}
+            <Card variant="outlined" id="input-range-cdr">
+              <CardContent sx={{ p: 2.5 }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>CDR SCORE INDEX</Typography>
+                  <Chip label="Scale: 0-3" size="small" variant="filled" sx={{ height: 18, fontSize: '9px', fontWeight: 'bold' }} />
+                </Box>
+                <FormControl fullWidth size="small">
+                  <Select
+                    id="score-cdr"
+                    value={cdrScore}
+                    onChange={(e: any) => setCdrScore(parseFloat(e.target.value))}
+                  >
+                    <MenuItem value="0">0.0 (Normal)</MenuItem>
+                    <MenuItem value="0.5">0.5 (Very Mild / Prodromal)</MenuItem>
+                    <MenuItem value="1">1.0 (Mild Dementia)</MenuItem>
+                    <MenuItem value="2">2.0 (Moderate Dementia)</MenuItem>
+                    <MenuItem value="3">3.0 (Severe Dementia)</MenuItem>
+                  </Select>
+                </FormControl>
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, lineHeight: 1.4 }}>
+                  Clinical Dementia Rating. Sourced via caregiver semi-structured interviews evaluating memory & orientation.
+                </Typography>
+              </CardContent>
+            </Card>
+          </Box>
+        </Box>
       )}
 
-      {/* STEP 4: Neuroimaging specifications */}
+      {/* STEP 4: Neuroimaging Modality Ingestion */}
       {step === 4 && (
-        <div className="space-y-6" id="workflow-step-four">
-          <div className="flex items-center space-x-2 text-slate-700 border-b border-slate-100 pb-3">
-            <Brain className="w-5 h-5 text-teal-600" />
-            <h3 className="font-semibold text-base">Step 4: Neuroimaging Modality & Radiologist Records</h3>
-          </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-four">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
+            <BrainIcon sx={{ color: 'primary.main' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 4: Neuroimaging Modality & Radiologist Records</Typography>
+          </Box>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="mri-details-formfields">
-            <div>
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="select-scan-type">IMAGE METRICS TYPE</label>
-              <select
-                id="select-scan-type"
-                value={scanType}
-                onChange={(e: any) => setScanType(e.target.value)}
-                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden font-semibold"
-              >
-                <option value="MRI 3T">MRI 3.0 Tesla Structural Scan</option>
-                <option value="PET-FDG">PET Scan (FDG Metabolic Marker)</option>
-                <option value="CT Scan">CT Scan Computed Tomography</option>
-              </select>
-            </div>
+          <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 3 }} id="mri-details-formfields">
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
+              <FormControl fullWidth size="small">
+                <InputLabel id="select-scan-type-label">IMAGE METRICS TYPE</InputLabel>
+                <Select
+                  labelId="select-scan-type-label"
+                  id="select-scan-type"
+                  value={scanType}
+                  label="IMAGE METRICS TYPE"
+                  onChange={(e: any) => setScanType(e.target.value)}
+                >
+                  <MenuItem value="MRI 3T">MRI 3.0 Tesla Structural Scan</MenuItem>
+                  <MenuItem value="PET-FDG">PET Scan (FDG Metabolic Marker)</MenuItem>
+                  <MenuItem value="CT Scan">CT Scan Computed Tomography</MenuItem>
+                </Select>
+              </FormControl>
 
-            <div>
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="imaging-scan-date">SCAN ACQUISITION DATE</label>
-              <input
-                id="imaging-scan-date"
-                type="date"
-                value={scanDate}
+              <TextField 
+                id="imaging-scan-date" 
+                label="SCAN ACQUISITION DATE" 
+                type="date" 
+                variant="outlined" 
+                fullWidth 
+                size="small"
+                value={scanDate} 
                 onChange={(e) => setScanDate(e.target.value)}
-                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden font-semibold"
+                slotProps={{ inputLabel: { shrink: true } }}
               />
-            </div>
+            </Box>
 
-            <div className="md:col-span-2">
-              <label className="text-xs font-bold text-slate-500 block mb-1.5" htmlFor="textarea-radiologist-notes">RADIOLOGIST FINDINGS & CLINICAL NOTES</label>
-              <textarea
-                id="textarea-radiologist-notes"
-                rows={4}
-                value={radiologistNotes}
-                onChange={(e) => setRadiologistNotes(e.target.value)}
-                placeholder="Declare initial findings here..."
-                className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-hidden font-semibold"
-              ></textarea>
-            </div>
+            <TextField 
+              id="textarea-radiologist-notes" 
+              label="RADIOLOGIST FINDINGS & CLINICAL NOTES" 
+              variant="outlined" 
+              fullWidth 
+              multiline
+              rows={4}
+              value={radiologistNotes} 
+              onChange={(e) => setRadiologistNotes(e.target.value)}
+              placeholder="Declare initial structural findings here..."
+              slotProps={{ inputLabel: { shrink: true } }}
+            />
 
-            <div className="md:col-span-2 border-2 border-dashed border-slate-200 rounded-xl p-8 hover:border-teal-500 text-center relative" id="wizard-mri-dropzone">
+            {/* Custom file uploader style */}
+            <Box 
+              sx={{ 
+                border: '2px dashed', 
+                borderColor: 'divider', 
+                borderRadius: 2, 
+                p: 4, 
+                textAlign: 'center', 
+                position: 'relative', 
+                bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)',
+                '&:hover': { borderColor: 'primary.main' }
+              }} 
+              id="wizard-mri-dropzone"
+            >
               <input
                 id="wizard-mri-inner-input"
                 type="file"
@@ -590,171 +541,215 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
                     setCustomFileUploaded(e.target.files[0].name);
                   }
                 }}
-                className="absolute inset-0 opacity-0 cursor-pointer"
+                style={{
+                  position: 'absolute',
+                  top: 0, right: 0, bottom: 0, left: 0,
+                  opacity: 0,
+                  cursor: 'pointer'
+                }}
               />
-              <span className="text-xs font-extrabold text-slate-700 block">
+              <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
                 {customFileUploaded ? `✓ Attached File: ${customFileUploaded}` : "Browse MRI Voxel Datasets (Optional)"}
-              </span>
-              <span className="text-[10px] text-slate-400 block mt-1">Accepts DICOM folders, NIfTI structural formats (.nii.gz)</span>
-            </div>
-          </div>
-        </div>
+              </Typography>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
+                Accepts DICOM folders, NIfTI structural formats (.nii.gz)
+              </Typography>
+            </Box>
+          </Box>
+        </Box>
       )}
 
-      {/* STEP 5: AI Analysis Simulation */}
+      {/* STEP 5: AI Processor Simulation and Intermediary Terminal Loggers */}
       {step === 5 && (
-        <div className="space-y-6" id="workflow-step-five">
-          <div className="flex items-center space-x-2 text-slate-700 border-b border-slate-100 pb-3">
-            <Cpu className="w-5 h-5 text-teal-600" />
-            <h3 className="font-semibold text-base">Step 5: Explainable AI Pipeline Trigger</h3>
-          </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-five">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
+            <ProcessorIcon sx={{ color: 'primary.main' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 5: Explainable AI Pipeline Trigger</Typography>
+          </Box>
 
-          <div className="flex flex-col items-center justify-center p-8 border border-slate-100 rounded-2xl bg-slate-50/40 text-center" id="ai-processor-action-zone">
+          <Paper variant="outlined" sx={{ p: 4, textAlign: 'center', bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }} id="ai-processor-action-zone">
             {simulationRunning ? (
-              <div className="space-y-4 w-full max-w-sm" id="processor-running-block">
-                <div className="w-12 h-12 border-4 border-slate-900 border-t-teal-400 rounded-full animate-spin mx-auto"></div>
-                <h4 className="text-sm font-bold text-slate-800">Processing voxel layers & clinical weights...</h4>
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2.5, maxWidth: 360, mx: 'auto' }} id="processor-running-block">
+                <CircularProgress color="primary" />
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Processing voxel layers & clinical weights...</Typography>
                 
-                {/* Visual loading bar */}
-                <div className="w-full bg-slate-100 rounded-full h-2">
-                  <div className="bg-slate-900 h-2 rounded-full transition-all duration-300" style={{ width: `${simulationPercentage}%` }}></div>
-                </div>
-                <span className="text-xs font-mono font-semibold text-slate-500">{simulationPercentage}% Compiled</span>
-              </div>
+                <Box sx={{ width: '100%' }}>
+                  <LinearProgress variant="determinate" value={simulationPercentage} sx={{ height: 6, borderRadius: 2 }} />
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', display: 'block', mt: 1, fontWeight: 'bold' }}>
+                    {simulationPercentage}% Compiled
+                  </Typography>
+                </Box>
+              </Box>
             ) : (
-              <div className="space-y-4" id="processor-idle-block">
-                <div className="p-4 bg-teal-50 text-teal-700 rounded-full inline-block">
-                  <Cpu className="w-8 h-8" />
-                </div>
-                <h4 className="text-base font-bold text-slate-900">Request Alzheimer's Prognostic Alignment</h4>
-                <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  By clicking below, you submit this multimodality intake file to our dual-core PyTorch fusion models. This processes structural voxels and generates SHAP factor importance.
-                </p>
-                <button
-                  id="btn-run-diagnostic-pipeline"
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }} id="processor-idle-block">
+                <Box sx={{ p: 1.5, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: '50%', display: 'flex' }}>
+                  <ProcessorIcon fontSize="large" />
+                </Box>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'extrabold' }}>Request Alzheimer's Prognostic Alignment</Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto' }}>
+                  By clicking below, you submit this multimodality intake file comprising demographics, clinical records, and voxel configurations to central PyTorch predictors. This outputs SHAP factors.
+                </Typography>
+                <Button 
+                  variant="contained" 
+                  color="secondary" 
                   onClick={runAIPipeline}
-                  className="bg-slate-900 text-teal-400 hover:bg-slate-800 px-6 py-3 rounded-xl text-xs font-bold border border-teal-500/20 cursor-pointer shadow-xs"
+                  id="btn-run-diagnostic-pipeline"
+                  sx={{ mt: 1 }}
                 >
                   Confirm and Run Diagnostic Core (PyTorch + MONAI)
-                </button>
-              </div>
+                </Button>
+              </Box>
             )}
 
-            {/* Terminal outputs simulator */}
+            {/* Simulated Live PyTorch logs */}
             {terminalLogs.length > 0 && (
-              <div className="w-full mt-8 bg-slate-950 text-slate-300 p-5 rounded-xl text-left border border-slate-800 shadow-inner font-mono text-[10px] space-y-1 sm:space-y-1.5" id="pipeline-terminal-box">
-                <div className="flex items-center space-x-1.5 text-teal-400 mb-2 border-b border-slate-800 pb-2">
-                  <Terminal className="w-3.5 h-3.5" />
-                  <span className="font-bold">PYTORCH INTERMEDIARY TERMINAL</span>
-                </div>
-                {terminalLogs.map((log, i) => (
-                  <p key={i} className="leading-relaxed whitespace-pre-wrap">{log}</p>
-                ))}
-              </div>
+              <Paper 
+                variant="elevation" 
+                elevation={3} 
+                sx={{ 
+                  mt: 4, 
+                  bgcolor: '#020617', 
+                  color: '#94a3b8', 
+                  p: 2.5, 
+                  borderRadius: 2, 
+                  textAlign: 'left',
+                  border: '1.5px solid #1e293b'
+                }} 
+                id="pipeline-terminal-box"
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: '1px solid #1e293b', pb: 1, mb: 1, color: '#38bdf8' }}>
+                  <TerminalIcon fontSize="small" />
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>PYTORCH INTERMEDIARY TERMINAL</Typography>
+                </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, fontFamily: 'monospace', fontSize: '11px' }}>
+                  {terminalLogs.map((log, i) => (
+                    <Typography key={i} variant="caption" sx={{ fontFamily: 'sans-serif', fontSize: '10px', color: '#cbd5e1' }}>
+                      {log}
+                    </Typography>
+                  ))}
+                </Box>
+              </Paper>
             )}
-          </div>
-        </div>
+          </Paper>
+        </Box>
       )}
 
-      {/* STEP 6: Results Review & DB Commit */}
+      {/* STEP 6: Results Confirmation & Local Synchronization */}
       {step === 6 && (
-        <div className="space-y-6 animate-fade-in" id="workflow-step-six">
-          <div className="flex items-center space-x-2 text-slate-700 border-b border-slate-100 pb-3">
-            <CheckCircle className="w-5 h-5 text-emerald-500" />
-            <h3 className="font-semibold text-base">Step 6: Confirm Results & Commit Demographics</h3>
-          </div>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-six">
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
+            <CheckIcon sx={{ color: 'success.main' }} />
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 6: Confirm Results & Commit Demographics</Typography>
+          </Box>
 
-          <div className="bg-slate-50 border border-slate-200 p-6 rounded-2xl space-y-6" id="results-review-dashboard">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6" id="review-metrics-split">
-              <div>
-                <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">SUBJECT DEMOGRAPHICS</span>
-                <p className="text-sm font-bold text-slate-800 mt-2">{firstName} {lastName}</p>
-                <p className="text-xs text-slate-500">Born {dob} ({age} years selection) • {gender}</p>
-                <p className="text-[11px] text-teal-600 font-mono mt-1">{mrn}</p>
-              </div>
+          <Paper variant="outlined" sx={{ p: 4, bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }} id="results-review-dashboard">
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1.1fr' }, gap: 3 }} id="review-metrics-split">
+              <Box>
+                <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'text.secondary' }}>
+                  SUBJECT DEMOGRAPHICS
+                </Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: '900', mt: 1 }}>
+                  {firstName} {lastName}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Born {dob} ({age} years old selection) • {gender}
+                </Typography>
+                <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontWeight: 'bold', display: 'block', mt: 0.5 }}>
+                  {mrn}
+                </Typography>
+              </Box>
 
-              <div>
-                <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">COGNITIVE INDEX</span>
-                <div className="flex items-center space-x-4 mt-2" id="review-cognitive-values">
-                  <div className="text-xs text-slate-700">
-                    <span className="font-bold block">MMSE:</span>
-                    <span>{mmseScore} / 30</span>
-                  </div>
-                  <div className="text-xs text-slate-700">
-                    <span className="font-bold block">MoCA:</span>
-                    <span>{mocaScore} / 30</span>
-                  </div>
-                  <div className="text-xs text-slate-700">
-                    <span className="font-bold block">CDR Index:</span>
-                    <span>{cdrScore} / 3.0</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+              <Box>
+                <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'text.secondary' }}>
+                  COGNITIVE INDEX
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 3, mt: 1 }} id="review-cognitive-values">
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>MMSE:</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{mmseScore} / 30</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>MoCA:</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{mocaScore} / 30</Typography>
+                  </Box>
+                  <Box>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>CDR Index:</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{cdrScore} / 3.0</Typography>
+                  </Box>
+                </Box>
+              </Box>
+            </Box>
 
-            <div className="border-t border-slate-200/60 pt-5" id="review-risk-projection-card">
-              <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">SIMULATED CLINICAL REPORT INSIGHT</span>
-              <div className="bg-emerald-50 border border-emerald-100 rounded-xl p-4 flex items-start space-x-3 mt-2">
-                <ShieldCheck className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-bold text-emerald-800">Pipeline Execution Complete</p>
-                  <p className="text-[11px] text-emerald-600/90 mt-1 leading-normal">
-                    This profile compiles correctly following all department criteria. Retrospective analysis can be re-run at any time. Click Save File to commit to the local registrar queue.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+            {/* Notification summary card */}
+            <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 3, mt: 3 }} id="review-risk-projection-card">
+              <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'text.secondary', display: 'block', mb: 1.5 }}>
+                SIMULATED CLINICAL REPORT INSIGHT
+              </Typography>
+              <Paper variant="outlined" sx={{ p: 2, display: 'flex', gap: 2, borderColor: 'success.light', bgcolor: 'rgba(16, 185, 129, 0.05)' }}>
+                <GuardIcon sx={{ color: 'success.main', mt: 0.25 }} />
+                <Box>
+                  <Typography variant="body2" sx={{ fontWeight: '950', color: theme.palette.mode === 'light' ? 'success.dark' : 'success.light' }}>
+                    Pipeline Execution Complete
+                  </Typography>
+                  <Typography variant="caption" sx={{ display: 'block', mt: 0.5, lineHeight: 1.4, color: 'text.primary' }}>
+                    This profile compiles correctly following all department criteria. Retrospective analysis can be re-run at any time. Click Save File to commit to central registrar databases.
+                  </Typography>
+                </Box>
+              </Paper>
+            </Box>
+          </Paper>
+        </Box>
       )}
 
-      {/* Action footer controls */}
-      <div className="flex justify-between items-center border-t border-slate-100 pt-6" id="workflow-nav-footer">
+      {/* Stepper Wizard Navigation Actions */}
+      <Box 
+        sx={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          borderTop: 1, 
+          borderColor: 'divider', 
+          pt: 3 
+        }} 
+        id="workflow-nav-footer"
+      >
         {step > 1 && step < 5 ? (
-          <button
-            id="btn-step-prev"
+          <Button 
+            variant="outlined" 
+            color="inherit" 
             onClick={() => setStep(step - 1)}
-            className="flex items-center space-x-2 text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-4 py-2.5 rounded-xl cursor-pointer"
+            startIcon={<ArrowLeftIcon />}
+            id="btn-step-prev"
+            sx={{ fontWeight: 'bold', borderColor: 'divider' }}
           >
-            <ArrowLeft className="w-4 h-4" />
-            <span>Previous Step</span>
-          </button>
-        ) : (
-          <div></div>
-        )}
+            Previous Step
+          </Button>
+        ) : <Box />}
 
         {step < 5 ? (
-          <button
-            id="btn-step-next"
+          <Button 
+            variant="contained" 
+            color="secondary" 
             onClick={() => setStep(step + 1)}
-            className="flex items-center space-x-2 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 px-5 py-2.5 rounded-xl cursor-pointer"
+            endIcon={<ArrowRightIcon />}
+            id="btn-step-next"
+            sx={{ fontWeight: 'bold' }}
           >
-            <span>Next Segment</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+            Next Segment
+          </Button>
         ) : step === 6 ? (
-          <button
-            id="btn-save-evaluation"
+          <Button 
+            variant="contained" 
+            color="success" 
             disabled={isSaving}
-            onClick={handleCreateAndSave}
-            className="flex items-center space-x-2 text-xs font-bold text-slate-950 bg-teal-400 hover:bg-teal-300 disabled:bg-slate-200 px-6 py-2.5 rounded-xl cursor-pointer"
+            onClick={submitWorkflow}
+            id="btn-save-evaluation"
+            sx={{ fontWeight: 'black', color: '#ffffff' }}
           >
             {isSaving ? "Syncing Workspace..." : "Commit and Save Patient"}
-          </button>
-        ) : (
-          <div></div>
-        )}
-      </div>
-
-    </div>
-  );
-}
-
-// Sub-icons
-function ShieldCheck({ className }: { className?: string }) {
-  return (
-    <svg className={className} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 0 1-1.043 3.296 3.745 3.745 0 0 1-3.296 1.043A3.745 3.745 0 0 1 12 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 0 1-3.296-1.043 3.745 3.745 0 0 1-1.043-3.296A3.745 3.745 0 0 1 3 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 0 1 1.043-3.296 3.746 3.746 0 0 1 3.296-1.043A3.746 3.746 0 0 1 12 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 0 1 3.296 1.043 3.746 3.746 0 0 1 1.043 3.296A3.745 3.745 0 0 1 21 12Z" />
-    </svg>
+          </Button>
+        ) : <Box />}
+      </Box>
+    </Paper>
   );
 }

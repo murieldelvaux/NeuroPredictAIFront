@@ -1,22 +1,17 @@
 /**
  * NeuroPredict AI - Clinical Workspace Root
  */
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { ThemeProvider, createTheme, CssBaseline, Box, Alert, IconButton, CircularProgress, Typography, Button } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import Layout from './components/Layout';
 import DoctorDashboard from './components/DoctorDashboard';
 import PatientProfile from './components/PatientProfile';
 import ClinicalWorkflow from './components/ClinicalWorkflow';
 import { usePatients, usePatient, useCreatePatient } from './hooks/useMedicalQueries';
-import { 
-  ShieldAlert, 
-  Sparkles, 
-  X, 
-  CheckCircle, 
-  AlertCircle 
-} from 'lucide-react';
 
-// Create solid query orchestrator
+// Create solid react-query orchestrator
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -26,7 +21,7 @@ const queryClient = new QueryClient({
   }
 });
 
-function WorkspaceRoot() {
+function WorkspaceRoot({ isDarkMode, onToggleTheme }: { isDarkMode: boolean; onToggleTheme: () => void }) {
   const [activeView, setActiveView] = useState<'dashboard' | 'profile' | 'workflow'>('dashboard');
   const [selectedPatientId, setSelectedPatientId] = useState<string>('pat-01');
   const [toastMessage, setToastMessage] = useState<{ text: string; type: 'success' | 'info' | 'error' } | null>(null);
@@ -69,39 +64,33 @@ function WorkspaceRoot() {
       activeView={activeView} 
       onNavigate={(view) => setActiveView(view)}
       selectedPatientName={activeDetail?.patient?.name}
+      isDarkMode={isDarkMode}
+      onToggleTheme={onToggleTheme}
     >
-      {/* Toast Alert popups bar */}
+      {/* Toast Alert popups bar using Material-UI Alert component */}
       {toastMessage && (
-        <div 
-          className={`mb-6 p-4.5 rounded-xl border flex items-center justify-between shadow-xs transition-all animate-fade-in ${
-            toastMessage.type === 'success' 
-              ? 'bg-emerald-50 border-emerald-100 text-emerald-800' 
-              : toastMessage.type === 'error'
-                ? 'bg-rose-50 border-rose-100 text-rose-800'
-                : 'bg-indigo-50 border-indigo-100 text-indigo-800'
-          }`}
+        <Alert 
+          severity={toastMessage.type}
+          action={
+            <IconButton
+              aria-label="close"
+              color="inherit"
+              size="small"
+              onClick={() => setToastMessage(null)}
+              id="btn-close-toast"
+            >
+              <CloseIcon fontSize="inherit" />
+            </IconButton>
+          }
+          sx={{ mb: 3 }}
           id="toast-notifications-banner"
         >
-          <div className="flex items-center space-x-3 text-xs font-semibold">
-            {toastMessage.type === 'success' ? (
-              <CheckCircle className="w-5 h-5 text-emerald-600 shrink-0" />
-            ) : (
-              <AlertCircle className="w-5 h-5 text-rose-600 shrink-0" />
-            )}
-            <p>{toastMessage.text}</p>
-          </div>
-          <button 
-            id="btn-close-toast" 
-            onClick={() => setToastMessage(null)} 
-            className="text-slate-400 hover:text-slate-700"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+          {toastMessage.text}
+        </Alert>
       )}
 
       {/* RENDER VIEW SCREEN */}
-      <div className="transition-all duration-300" id="main-view-container">
+      <Box sx={{ transition: 'all 0.3s' }} id="main-view-container">
         
         {/* DOCTOR DASHBOARD */}
         {activeView === 'dashboard' && (
@@ -131,41 +120,125 @@ function WorkspaceRoot() {
 
         {/* COMPREHENSIVE PATIENT VIEW ANALYSIS */}
         {activeView === 'profile' && (
-          <div>
+          <Box>
             {detailLoading ? (
-              <div className="flex flex-col items-center justify-center py-20 space-y-4" id="profile-detailed-loading">
-                <div className="w-10 h-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin"></div>
-                <span className="text-slate-400 font-mono text-xs font-semibold">Recalculating feature importance gradients...</span>
-              </div>
+              <Box 
+                sx={{ 
+                  display: 'flex', 
+                  flexDirection: 'column', 
+                  alignItems: 'center', 
+                  justifyContent: 'center', 
+                  py: 10, 
+                  gap: 2 
+                }} 
+                id="profile-detailed-loading"
+              >
+                <CircularProgress color="primary" />
+                <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary', fontWeight: 'bold' }}>
+                  Recalculating feature importance gradients...
+                </Typography>
+              </Box>
             ) : activeDetail ? (
               <PatientProfile 
                 patientRecord={activeDetail} 
                 onBack={() => setActiveView('dashboard')}
               />
             ) : (
-              <div className="bg-white border border-slate-200 rounded-2xl p-8 text-center text-slate-500" id="profile-not-found">
-                <p className="font-semibold text-sm">Please select an active patient from the workspace queue first.</p>
-                <button
+              <Box 
+                sx={{ 
+                  p: 4, 
+                  textAlign: 'center', 
+                  border: 1, 
+                  borderColor: 'divider', 
+                  bgcolor: 'background.paper', 
+                  borderRadius: 2 
+                }} 
+                id="profile-not-found"
+              >
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                  Please select an active patient from the workspace queue first.
+                </Typography>
+                <Button
                   id="btn-trigger-redirect-dashboard"
+                  variant="contained"
                   onClick={() => setActiveView('dashboard')}
-                  className="mt-4 bg-slate-900 text-teal-400 px-4 py-2 rounded-xl text-xs font-semibold cursor-pointer"
+                  sx={{ mt: 2, fontSize: '11px', fontWeight: 'bold' }}
                 >
                   Return to Dashboard
-                </button>
-              </div>
+                </Button>
+              </Box>
             )}
-          </div>
+          </Box>
         )}
 
-      </div>
+      </Box>
     </Layout>
   );
 }
 
 export default function App() {
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
+  // Generate our custom MUI theme dynamically depending on dark mode state
+  const theme = useMemo(() => {
+    return createTheme({
+      palette: {
+        mode: isDarkMode ? 'dark' : 'light',
+        primary: {
+          main: '#0284c7', // Sky blue
+        },
+        secondary: {
+          main: '#1e293b', // Slate gray
+        },
+        background: {
+          default: isDarkMode ? '#0a0f1d' : '#f8fafc',
+          paper: isDarkMode ? '#111827' : '#ffffff',
+        },
+        divider: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+      },
+      typography: {
+        fontFamily: '"Inter", "Roboto", "Helvetica", "Arial", sans-serif',
+        button: {
+          textTransform: 'none',
+          fontWeight: 600,
+        },
+      },
+      shape: {
+        borderRadius: 8,
+      },
+      components: {
+        MuiCard: {
+          styleOverrides: {
+            root: {
+              boxShadow: 'none',
+              backgroundImage: 'none',
+              border: '1px solid',
+              borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+            },
+          },
+        },
+        MuiPaper: {
+          styleOverrides: {
+            outlined: {
+              border: '1px solid',
+              borderColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.08)',
+            },
+          },
+        },
+      },
+    });
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode(prev => !prev);
+  };
+
   return (
     <QueryClientProvider client={queryClient}>
-      <WorkspaceRoot />
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <WorkspaceRoot isDarkMode={isDarkMode} onToggleTheme={toggleTheme} />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
