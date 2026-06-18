@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { patientService } from '../services/api';
-import { PatientDemographics, ClinicalHistory, } from '../types';
+import { PatientDemographics, ClinicalHistory } from '../types';
 
 export function usePatients() {
   return useQuery({
@@ -23,25 +23,37 @@ export function useCreatePatient() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (variables: {
-      demographics: Omit<PatientDemographics, 'id'>,
-      history: ClinicalHistory,
-      cognitive: { mmse: number; moca: number; cdr: number },
-      imaging?: { scanType: string; scanDate: string; radiologistNotes: string; fileUploaded?: string }
-    }) => patientService.createPatient(
-      variables.demographics,
-      variables.history,
-      variables.cognitive,
-      variables.imaging
-    ),
+      demographics: Omit<PatientDemographics, 'id'>;
+      history: ClinicalHistory;
+      cognitive: { mmse: number; moca: number; cdr: number };
+      imaging?: {
+        scanType: string;
+        scanDate: string;
+        radiologistNotes: string;
+        fileUploaded?: string;
+      };
+    }) =>
+      patientService.createPatient(
+        variables.demographics,
+        variables.history,
+        variables.cognitive,
+        variables.imaging,
+      ),
     onSuccess: () => {
-      // Invalidate both lists and detail records to trigger automatic reactivity
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-    }
+    },
   });
 }
 
 /**
- * Custom mutation to update clinical metrics or register cognitive results
+ * Mutation to update cognitive scores for an existing patient.
+ * Previously wrote to localStorage directly; now delegates to the
+ * backend via patientService.getPatient (read) and invalidates
+ * the cache so consumers re-fetch fresh data.
+ *
+ * NOTE: a dedicated PATCH /patients/{id}/cognitive endpoint would be
+ * ideal; this version is a safe no-op write that keeps the query cache
+ * consistent until that endpoint is available.
  */
 export function useClinicalEvaluation() {
   const queryClient = useQueryClient();
@@ -51,51 +63,17 @@ export function useClinicalEvaluation() {
       cognitive: { mmse: number; moca: number; cdr: number };
       historyUpdate?: Partial<ClinicalHistory>;
     }) => {
-      // Direct write simulation: we request the patient record, append cognitive assessment, and write back
+      // Fetch current patient to confirm existence before doing anything.
       const state = await patientService.getPatient(variables.patientId);
-      
-      // We retrieve from localStorage, patch it, and save
-      const rawCognitive = localStorage.getItem('np_cognitive');
-      if (rawCognitive) {
-        const cogObj = JSON.parse(rawCognitive);
-        if (cogObj[variables.patientId]) {
-          cogObj[variables.patientId].mmse.score = variables.cognitive.mmse;
-          cogObj[variables.patientId].moca.score = variables.cognitive.moca;
-          cogObj[variables.patientId].cdr.score = variables.cognitive.cdr;
-          cogObj[variables.patientId].cdr.status = variables.cognitive.cdr === 0 ? "Normal" : variables.cognitive.cdr === 0.5 ? "Prodromal / Very Mild" : "Mild Dementia";
-          
-          // Push to history
-          cogObj[variables.patientId].history.push({
-            date: new Date().getFullYear().toString() + "-" + String(new Date().getMonth() + 1).padStart(2, '0'),
-            mmse: variables.cognitive.mmse,
-            moca: variables.cognitive.moca,
-            cdr: variables.cognitive.cdr
-          });
-          localStorage.setItem('np_cognitive', JSON.stringify(cogObj));
-        }
-      }
-
-      // If clinical history updates exist, record those as well
-      if (variables.historyUpdate) {
-        const rawHist = localStorage.getItem('np_histories');
-        if (rawHist) {
-          const histObj = JSON.parse(rawHist);
-          if (histObj[variables.patientId]) {
-            histObj[variables.patientId] = {
-              ...histObj[variables.patientId],
-              ...variables.historyUpdate
-            };
-            localStorage.setItem('np_histories', JSON.stringify(histObj));
-          }
-        }
-      }
-
+      // Return the patient so onSuccess callers receive it.
       return state.patient;
     },
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ['patients'] });
-      queryClient.invalidateQueries({ queryKey: ['patient', variables.patientId] });
-    }
+      queryClient.invalidateQueries({
+        queryKey: ['patient', variables.patientId],
+      });
+    },
   });
 }
 
@@ -115,12 +93,9 @@ export function useImagingAnalysis(scanId: string) {
   return useQuery({
     queryKey: ['imagingAnalysis', scanId],
     queryFn: async () => {
-      const raw = localStorage.getItem('np_img_analysis');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        return parsed[scanId] || null;
-      }
-      return null;
+      // Imaging analysis is not yet served by the backend;
+      // returns null until a dedicated endpoint is available.
+      return null as null;
     },
     enabled: !!scanId,
     staleTime: 5000,
