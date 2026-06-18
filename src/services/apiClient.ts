@@ -79,18 +79,30 @@ export const predictionApiService = {
 import type { Patient, AIAnalysisResult } from '../types';
 
 export function adaptPatientOut(p: PatientOut): Patient {
+  const score = p.risk_score ?? 0;
+  const rawCategory = p.risk_category ?? '';
+  
+  // Normaliza capitalização: "low" → "Low", "HIGH" → "High"
+  const normalize = (s: string) =>
+    s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  
+  const category = ['High', 'Moderate', 'Low'].includes(normalize(rawCategory))
+    ? normalize(rawCategory) as 'High' | 'Moderate' | 'Low'
+    : score >= 0.6 ? 'High' : score >= 0.3 ? 'Moderate' : 'Low';
+
   return {
     id: p.id,
     name: p.name,
     age: p.age,
-    gender: p.gender,
-    mrn: p.mrn,
-    riskScore: p.risk_score,
-    riskCategory: p.risk_category,
-    lastEvaluated: p.last_evaluated,
-    status: p.status,
+    gender: p.gender ?? '—',
+    mrn: p.mrn ?? '—',
+    riskScore: Math.round(score * 100),   // converte 0.72 → 72 se o backend manda float 0-1
+    riskCategory: category,
+    lastEvaluated: p.last_evaluated ?? '—',
+    status: p.status ?? 'Pending Interpretation',
   };
 }
+
 
 export function adaptPredictionOut(p: PredictionOut): AIAnalysisResult {
   return {
