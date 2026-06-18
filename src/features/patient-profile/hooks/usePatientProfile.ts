@@ -1,7 +1,6 @@
 import { useState } from 'react';
-import type { UsePatientProfileReturn } from '../types/patientProfile.types';
 
-export function usePatientProfile(): UsePatientProfileReturn {
+export function usePatientProfile() {
   const [activeTab, setActiveTab] = useState<'clinical' | 'imaging' | 'ai'>('clinical');
   const [sliceDepth, setSliceDepth] = useState<number>(45);
   const [showHeatmap, setShowHeatmap] = useState<boolean>(true);

@@ -1,2 +1,2 @@
-// Feature-scoped re-export during migration window.
+// Re-export from legacy location until full migration
 export { default } from '../../../../components/ClinicalWorkflow';

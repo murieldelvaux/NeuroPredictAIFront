@@ -1,28 +1,23 @@
 import { useState, useMemo } from 'react';
-import type { Patient } from '../../../types';
-import type {
-  RiskFilter,
-  StatusFilter,
-  UseDoctorDashboardReturn,
-} from '../types/dashboard.types';
+import { Patient } from '../../../types';
 
-export function useDoctorDashboard(patients: Patient[]): UseDoctorDashboardReturn {
+export function useDoctorDashboard(patients: Patient[]) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [riskFilter, setRiskFilter] = useState<RiskFilter>('ALL');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
+  const [riskFilter, setRiskFilter] = useState<'ALL' | 'High' | 'Moderate' | 'Low'>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | 'Completed' | 'Pending Interpretation' | 'Awaiting MRI'>('ALL');
 
   const stats = useMemo(() => {
     const total = patients.length;
-    const highRisk = patients.filter((p) => p.riskCategory === 'High').length;
-    const awaitingMRI = patients.filter((p) => p.status === 'Awaiting MRI').length;
+    const highRisk = patients.filter(p => p.riskCategory === 'High').length;
+    const awaitingMRI = patients.filter(p => p.status === 'Awaiting MRI').length;
     const avgRisk = Math.round(
-      patients.reduce((sum, p) => sum + p.riskScore, 0) / (total || 1),
+      patients.reduce((sum, p) => sum + p.riskScore, 0) / (total || 1)
     );
     return { total, highRisk, awaitingMRI, avgRisk };
   }, [patients]);
 
   const filteredPatients = useMemo(() => {
-    return patients.filter((p) => {
+    return patients.filter(p => {
       const matchesSearch =
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.mrn.toLowerCase().includes(searchTerm.toLowerCase()) ||
