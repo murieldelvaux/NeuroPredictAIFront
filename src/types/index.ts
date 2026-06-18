@@ -7,7 +7,7 @@ export interface Patient {
   name: string;
   age: number;
   gender: 'Male' | 'Female' | 'Other';
-  mrn: string; // Medical Record Number
+  mrn: string;
   riskScore: number; // 0 - 100
   riskCategory: 'High' | 'Moderate' | 'Low';
   lastEvaluated: string;
@@ -29,11 +29,11 @@ export interface PatientDemographics {
 export interface ClinicalHistory {
   symptoms: string[];
   familyHistory: {
-    alzheimersRelation: string[]; // e.g., "Mother", "Maternal Grandfather"
+    alzheimersRelation: string[];
     dementiaCount: number;
   };
-  riskFactors: string[]; // e.g., "ApoE4 positive", "Hypertension", "Cardiovascular"
-  comorbidities: string[]; // e.g., "Type 2 Diabetes", "Hypercholesterolemia"
+  riskFactors: string[];
+  comorbidities: string[];
   medications: string[];
 }
 
@@ -49,7 +49,7 @@ export interface CognitiveEvaluation {
   mmse: CognitiveScoreRange;
   moca: CognitiveScoreRange;
   cdr: {
-    score: number; // Clinical Dementia Rating (0, 0.5, 1, 2, 3)
+    score: number;
     status: string;
     assessmentDate: string;
   };
@@ -78,23 +78,23 @@ export interface ImagingExam {
 export interface ImagingAnalysisResult {
   scanId: string;
   status: 'Success' | 'Processing' | 'Failed';
-  hippocampalVolumeLeft: number; // in cm3
-  hippocampalVolumeRight: number; // in cm3
-  ventricleEnlargementRatio: number; // ratio
-  corticalThicknessAvg: number; // in mm
+  hippocampalVolumeLeft: number;
+  hippocampalVolumeRight: number;
+  ventricleEnlargementRatio: number;
+  corticalThicknessAvg: number;
   findings: string[];
 }
 
 export interface AIAnalysisResult {
   patientId: string;
   predictionDate: string;
-  probability: number; // 0.0 - 1.0 (e.g. 0.78)
+  probability: number;
   riskCategory: 'High' | 'Moderate' | 'Low';
-  confidenceScore: number; // 0.0 - 1.0 (e.g. 0.94)
+  confidenceScore: number;
   explainability: {
     shapAttributions: {
       featureName: string;
-      attributionValue: number; // Positive = pushes risk up, Negative = pushes risk down
+      attributionValue: number;
       category: 'Cognitive' | 'Imaging' | 'Clinical' | 'Demographic';
     }[];
     aiReasoningSummary: string;
