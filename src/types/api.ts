@@ -45,16 +45,24 @@ export interface PatientCreatePayload {
   radiologist_notes?: string;
 }
 
+/**
+ * Payload sent to POST /predict (multipart/form-data).
+ *
+ * Backend fields (prediction.py):
+ *   patient_id : str        — required
+ *   mri_file   : File       — required for real inference (.nii / .nii.gz)
+ *   age        : float      — optional
+ *   mmse       : float      — optional (Mini-Mental State Examination)
+ *   cdr        : float      — optional (Clinical Dementia Rating)
+ *   cdrtot     : float      — optional (CDR sum-of-boxes)
+ */
 export interface PredictPayload {
   patient_id: string;
-  mmse: number;
-  moca: number;
-  cdr: number;
-  age: number;
-  education_years: number;
-  has_apoe4: boolean;
-  has_mri: boolean;
-  mri_hippocampus_volume?: number;
+  mri_file?: File | null;
+  age?: number | null;
+  mmse?: number | null;
+  cdr?: number | null;
+  cdrtot?: number | null;
 }
 
 export interface PredictionExplanation {
@@ -68,5 +76,7 @@ export interface PredictionOut {
   risk_score: number;
   classification: string;
   confidence: number;
+  probabilities?: Record<string, number>;
   explanation: PredictionExplanation[];
+  model_version?: string;
 }
