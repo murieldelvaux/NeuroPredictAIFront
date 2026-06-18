@@ -323,7 +323,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
               <Box sx={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 2, fontSize: '12px' }} id="patient-metrics-demographic-list">
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>SEX / GENDER</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{demographics?.gender}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{demographics?.sex}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>AGE</Typography>

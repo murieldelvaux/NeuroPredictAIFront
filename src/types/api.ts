@@ -9,7 +9,7 @@ export interface PatientOut {
   id: string;
   name: string;
   age: number;
-  gender: 'Male' | 'Female' | 'Other';
+  sex: 'Male' | 'Female' | 'Other';
   mrn: string;
   risk_score: number;
   risk_category: 'Low' | 'Moderate' | 'High';
@@ -17,7 +17,8 @@ export interface PatientOut {
   status: 'Completed' | 'Pending Interpretation' | 'Awaiting MRI';
 }
 
-export interface PatientDetailOut extends PatientOut {
+export interface PatientDetailOut {
+  patient: PatientOut;
   demographics: Record<string, any>;
   history: Record<string, any>;
   cognitive: Record<string, any>;

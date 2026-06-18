@@ -247,7 +247,7 @@ export default function DoctorDashboard({
                       <TableCell sx={{ py: 1.5 }}>
                         <Typography variant="body2" onClick={() => onSelectPatient(p.id)} sx={{ fontWeight: 'bold', cursor: 'pointer', '&:hover': { color: 'primary.main' } }}>{p.name}</Typography>
                       </TableCell>
-                      <TableCell sx={{ py: 1.5 }}><Typography variant="body2" color="text.secondary">{p.age} y/o • {p.gender}</Typography></TableCell>
+                      <TableCell sx={{ py: 1.5 }}><Typography variant="body2" color="text.secondary">{p.age} y/o • {p.sex}</Typography></TableCell>
                       <TableCell sx={{ py: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                           <CalendarIcon sx={{ fontSize: 13 }} />

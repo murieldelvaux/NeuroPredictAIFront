@@ -13,7 +13,7 @@ export const patientService = {
 
   getPatient(id: string) {
     return patientApiService.getPatient(id).then(detail => ({
-      patient: adaptPatientOut(detail),
+      patient: adaptPatientOut(detail.patient),
       aiAnalysis: null,
     }));
   },
@@ -39,20 +39,17 @@ export const patientService = {
       .createPatient({
         name: demographics.name,
         age: demographics.age,
-        gender: demographics.gender,
-        mrn: demographics.mrn,
-        education_years: demographics.educationYears ?? 12,
-        symptoms: history.symptoms ?? [],
-        family_history: hasFamilyHistory,
-        risk_factors: history.riskFactors ?? [],
-        comorbidities: history.comorbidities ?? [],
-        medications: history.medications ?? [],
-        mmse: cognitive.mmse,
-        moca: cognitive.moca,
-        cdr: cognitive.cdr,
-        scan_type: imaging?.scanType,
-        scan_date: imaging?.scanDate,
-        radiologist_notes: imaging?.radiologistNotes,
+        sex: demographics.sex,
+        clinical_data:{
+          education_years: demographics.educationYears ?? 12,
+          mmse: cognitive.mmse,
+          moca: cognitive.moca,
+          cdr: cognitive.cdr,
+          family_history: hasFamilyHistory,
+          cdrtot: cognitive.cdrtot,
+          comorbidities: history.comorbidities ?? [],
+        },
+        date_of_birth: demographics.dob,
       })
       .then(adaptPatientOut);
   },

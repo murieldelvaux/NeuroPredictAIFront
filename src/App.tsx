@@ -37,36 +37,40 @@ function WorkspaceRoot({
   const [activeView, setActiveView] = useState<'dashboard' | 'profile' | 'workflow'>(
     'dashboard',
   );
-  const [selectedPatientId, setSelectedPatientId] = useState<string>('pat-01');
+  // FIX: start as null so usePatient does not fire before a patient is selected
+  const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<{
     text: string;
     type: 'success' | 'info' | 'error';
   } | null>(null);
 
   const { data: patients = [], isLoading: listLoading } = usePatients();
-  const { data: activeDetail, isLoading: detailLoading } = usePatient(selectedPatientId);
+  // FIX: pass empty string when null so the query is disabled (enabled: !!id)
+  const { data: activeDetail, isLoading: detailLoading } = usePatient(selectedPatientId ?? '');
   const createPatientMutation = useCreatePatient();
 
+  // FIX: set selectedPatientId then navigate to profile
   const handleSelectPatient = (id: string) => {
     setSelectedPatientId(id);
     setActiveView('profile');
   };
 
+  console.log(selectedPatientId, activeDetail);
   const handleCreatePatientSubmit = (variables: any) => {
     createPatientMutation.mutate(variables, {
       onSuccess: (newPatient) => {
-        // Navega pro perfil imediatamente
+        // Navigate to profile immediately after creation
         setSelectedPatientId(newPatient.id);
         setActiveView('profile');
 
-        // Dispara a predição com os dados do paciente recém-criado
+        // Fire prediction with the newly created patient data
         predictionApiService
           .predict({
             patient_id: newPatient.id,
             age:    variables.demographics?.age    ?? newPatient.age,
             mmse:   variables.cognitive?.mmse,
             cdr:    variables.cognitive?.cdr,
-            cdrtot: variables.cognitive?.cdr,   // CDR sum-of-boxes = CDR quando não há valor separado
+            cdrtot: variables.cognitive?.cdr,
             mri_file: null,
           })
           .then(() => {
@@ -76,7 +80,6 @@ function WorkspaceRoot({
             });
           })
           .catch((predErr: any) => {
-            // Paciente foi salvo — avisa mas não bloqueia
             setToastMessage({
               text: `Patient saved, but prediction failed: ${predErr.message}`,
               type: 'info',
@@ -95,7 +98,6 @@ function WorkspaceRoot({
       },
     });
   };
-
 
   return (
     <Layout
@@ -148,7 +150,30 @@ function WorkspaceRoot({
 
         {activeView === 'profile' && (
           <Box>
-            {detailLoading ? (
+            {/* FIX: redirect to dashboard if no patient selected */}
+            {!selectedPatientId ? (
+              <Box
+                sx={{
+                  p: 4,
+                  textAlign: 'center',
+                  border: 1,
+                  borderColor: 'divider',
+                  bgcolor: 'background.paper',
+                  borderRadius: 2,
+                }}
+              >
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
+                  Please select an active patient from the workspace queue first.
+                </Typography>
+                <Button
+                  variant="contained"
+                  onClick={() => setActiveView('dashboard')}
+                  sx={{ mt: 2, fontSize: '11px', fontWeight: 'bold' }}
+                >
+                  Return to Dashboard
+                </Button>
+              </Box>
+            ) : detailLoading ? (
               <Box
                 sx={{
                   display: 'flex',
@@ -184,7 +209,7 @@ function WorkspaceRoot({
                 }}
               >
                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                  Please select an active patient from the workspace queue first.
+                  Patient data could not be loaded. Please try again.
                 </Typography>
                 <Button
                   variant="contained"

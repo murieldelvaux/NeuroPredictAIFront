@@ -18,16 +18,16 @@ export function adaptPatientOut(p: PatientOut): Patient {
         ? 'Moderate'
         : 'Low';
 
-  const gender =
-    p.gender === 'Male' || p.gender === 'Female' || p.gender === 'Other'
-      ? p.gender
-      : 'Other';
+  const gender = (sex: string) => {
+    return sex === 'F' ? 'Female' : sex === 'M' ? 'Male' : 'Other';
+  };
+
 
   return {
     id: p.id,
     name: p.name,
     age: p.age,
-    gender,
+    sex: gender(p.sex),
     mrn: p.mrn ?? '—',
     riskScore: Math.round(score * 100),
     riskCategory: category,
