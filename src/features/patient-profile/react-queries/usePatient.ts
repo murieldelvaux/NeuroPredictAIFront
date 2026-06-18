@@ -29,14 +29,22 @@ const mapGender = (value: unknown): PatientDemographics['gender'] => {
 const normalizeList = (value: unknown): string[] =>
   Array.isArray(value) ? value.map(String).filter(Boolean) : [];
 
+/**
+ * FIX: mapDemographics now falls back to root-level PatientDetailOut fields
+ * when the demographics sub-object is empty or missing — which happens when
+ * the backend GET /patients/{id} returns a flat PatientOut-compatible structure
+ * without nesting demographic details.
+ */
 const mapDemographics = (detail: PatientDetailOut): PatientDemographics => {
   const d = detail.demographics ?? {};
   return {
     id: detail.id,
-    name: detail.name,
-    age: detail.age,
+    // name: prefer sub-object, fall back to root
+    name: d.name ?? detail.name,
+    // age: prefer sub-object, fall back to root
+    age: Number(d.age ?? detail.age ?? 0),
     gender: mapGender(d.gender ?? detail.gender),
-    mrn: detail.mrn ?? '—',
+    mrn: d.mrn ?? detail.mrn ?? '—',
     dob: d.date_of_birth ?? d.dob ?? '—',
     phone: d.phone ?? d.telephone ?? d.phone_encrypted ?? '—',
     email: d.email ?? d.secure_email ?? '—',
@@ -44,6 +52,9 @@ const mapDemographics = (detail: PatientDetailOut): PatientDemographics => {
   };
 };
 
+/**
+ * FIX: mapHistory falls back gracefully when history sub-object is empty.
+ */
 const mapHistory = (detail: PatientDetailOut): ClinicalHistory => {
   const h = detail.history ?? {};
   return {
@@ -72,14 +83,21 @@ const statusFromScore = (
   return 'Normal';
 };
 
+/**
+ * FIX: mapCognitive falls back to root-level cognitive score fields
+ * (e.g. detail.mmse, detail.cdr) when the cognitive sub-object is empty.
+ * Also tolerates a flat API response without a nested cognitive object.
+ */
 const mapCognitive = (detail: PatientDetailOut): CognitiveEvaluation => {
   const c = detail.cognitive ?? {};
+  const rootAny = detail as any;
   const assessmentDate =
     c.assessment_date ?? detail.last_evaluated ?? new Date().toISOString().split('T')[0];
 
-  const mmse = Number(c.mmse ?? 0);
-  const moca = Number(c.moca ?? 0);
-  const cdr = Number(c.cdr ?? 0);
+  // Prefer nested, fall back to root-level fields that some backends return flat
+  const mmse = Number(c.mmse ?? rootAny.mmse ?? 0);
+  const moca = Number(c.moca ?? rootAny.moca ?? 0);
+  const cdr  = Number(c.cdr  ?? rootAny.cdr  ?? 0);
 
   return {
     patientId: detail.id,
@@ -182,7 +200,8 @@ export const usePatient = <TData = PatientRecord>(
         aiAnalysis: mapAIAnalysis(detail),
       } satisfies PatientRecord;
     },
-    enabled: !!id,
+    // FIX: only run query when id is a non-empty string
+    enabled: typeof id === 'string' && id.trim().length > 0,
     staleTime: 5000,
   });
 };
