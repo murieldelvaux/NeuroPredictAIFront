@@ -119,3 +119,17 @@ export interface MedicalWorkflowSession {
     fileUploaded?: string;
   };
 }
+
+/**
+ * Aggregate type returned by usePatient — combines the core Patient
+ * record with all related clinical sub-documents.
+ */
+export interface PatientRecord {
+  patient: Patient;
+  demographics?: PatientDemographics;
+  history?: ClinicalHistory;
+  cognitive?: CognitiveEvaluation;
+  exam?: ImagingExam;
+  imagingAnalysis?: ImagingAnalysisResult;
+  aiAnalysis?: AIAnalysisResult | null;
+}
