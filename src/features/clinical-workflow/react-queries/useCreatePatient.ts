@@ -13,26 +13,38 @@ export const useCreatePatient = (
 
   return useMutation<Patient, unknown, CreatePatientVariables>({
     ...options,
-    mutationFn: (variables: CreatePatientVariables): Promise<Patient> =>
-      createPatient({
+    mutationFn: (variables: CreatePatientVariables): Promise<Patient> => {
+      const genderMap: Record<string, 'M' | 'F' | 'O'> = {
+        Male: 'M',
+        Female: 'F',
+        Other: 'O',
+      };
+
+      const dob = variables.demographics.dob
+        ?? new Date(
+            new Date().getFullYear() - variables.demographics.age,
+            0,
+            1,
+          )
+            .toISOString()
+            .split('T')[0];
+
+      return createPatient({
         name: variables.demographics.name,
         age: variables.demographics.age,
-        gender: variables.demographics.gender,
-        mrn: variables.demographics.mrn,
-        education_years: variables.demographics.educationYears ?? 12,
-        symptoms: variables.history.symptoms ?? [],
-        family_history:
-          (variables.history.familyHistory?.dementiaCount ?? 0) > 0,
-        risk_factors: variables.history.riskFactors ?? [],
-        comorbidities: variables.history.comorbidities ?? [],
-        medications: variables.history.medications ?? [],
-        mmse: variables.cognitive.mmse,
-        moca: variables.cognitive.moca,
-        cdr: variables.cognitive.cdr,
-        scan_type: variables.imaging?.scanType,
-        scan_date: variables.imaging?.scanDate,
-        radiologist_notes: variables.imaging?.radiologistNotes,
-      }).then(adaptPatientOut),
+        sex: genderMap[variables.demographics.gender] ?? 'O',
+        date_of_birth: dob,
+        clinical_data: {
+          mmse: variables.cognitive.mmse,
+          moca: variables.cognitive.moca,
+          cdr: variables.cognitive.cdr,
+          cdrtot: variables.cognitive.cdr,
+          comorbidities: variables.history.comorbidities ?? [],
+          family_history: (variables.history.familyHistory?.dementiaCount ?? 0) > 0,
+          education_years: variables.demographics.educationYears ?? 12,
+        },
+      }).then(adaptPatientOut);
+    },
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: [patientsQueryKey] });
       options.onSuccess?.(...args);

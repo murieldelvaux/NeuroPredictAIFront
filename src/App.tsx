@@ -25,6 +25,7 @@ import ClinicalWorkflow from './features/clinical-workflow/components/ClinicalWo
 import { usePatients } from './features/dashboard/react-queries/usePatients';
 import { usePatient } from './features/patient-profile/react-queries/usePatient';
 import { useCreatePatient } from './features/clinical-workflow/react-queries/useCreatePatient';
+import { predictionApiService } from './services/apiClient';
 
 function WorkspaceRoot({
   isDarkMode,
@@ -54,13 +55,36 @@ function WorkspaceRoot({
   const handleCreatePatientSubmit = (variables: any) => {
     createPatientMutation.mutate(variables, {
       onSuccess: (newPatient) => {
-        setToastMessage({
-          text: `Patient profile for ${newPatient.name} successfully committed and synchronized with PYTORCH cloud registries.`,
-          type: 'success',
-        });
+        // Navega pro perfil imediatamente
         setSelectedPatientId(newPatient.id);
         setActiveView('profile');
-        setTimeout(() => setToastMessage(null), 5000);
+
+        // Dispara a predição com os dados do paciente recém-criado
+        predictionApiService
+          .predict({
+            patient_id: newPatient.id,
+            age:    variables.demographics?.age    ?? newPatient.age,
+            mmse:   variables.cognitive?.mmse,
+            cdr:    variables.cognitive?.cdr,
+            cdrtot: variables.cognitive?.cdr,   // CDR sum-of-boxes = CDR quando não há valor separado
+            mri_file: null,
+          })
+          .then(() => {
+            setToastMessage({
+              text: `Patient ${newPatient.name} committed and prediction generated successfully.`,
+              type: 'success',
+            });
+          })
+          .catch((predErr: any) => {
+            // Paciente foi salvo — avisa mas não bloqueia
+            setToastMessage({
+              text: `Patient saved, but prediction failed: ${predErr.message}`,
+              type: 'info',
+            });
+          })
+          .finally(() => {
+            setTimeout(() => setToastMessage(null), 6000);
+          });
       },
       onError: (err: any) => {
         setToastMessage({
@@ -71,6 +95,7 @@ function WorkspaceRoot({
       },
     });
   };
+
 
   return (
     <Layout

@@ -26,24 +26,24 @@ export interface PatientDetailOut extends PatientOut {
   ai_analysis?: Record<string, any>;
 }
 
-export interface PatientCreatePayload {
-  name: string;
-  age: number;
-  gender: string;
-  mrn: string;
-  education_years: number;
-  symptoms: string[];
-  family_history: boolean;
-  risk_factors: string[];
-  comorbidities: string[];
-  medications: string[];
+export interface PatientCreateClinicalData {
   mmse: number;
   moca: number;
   cdr: number;
-  scan_type?: string;
-  scan_date?: string;
-  radiologist_notes?: string;
+  cdrtot: number;
+  comorbidities: string[];
+  family_history: boolean;
+  education_years: number;
 }
+
+export interface PatientCreatePayload {
+  name: string;
+  age: number;
+  sex: 'M' | 'F' | 'O';
+  date_of_birth: string; // "YYYY-MM-DD"
+  clinical_data: PatientCreateClinicalData;
+}
+
 
 /**
  * Payload sent to POST /predict (multipart/form-data).

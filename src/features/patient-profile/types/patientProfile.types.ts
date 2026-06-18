@@ -1,3 +1,5 @@
+import type { AIAnalysisResult } from '../../../types';
+
 export interface UsePatientProfileReturn {
   activeTab: 'clinical' | 'imaging' | 'ai';
   setActiveTab: (tab: 'clinical' | 'imaging' | 'ai') => void;
@@ -7,5 +9,14 @@ export interface UsePatientProfileReturn {
   setShowHeatmap: (show: boolean) => void;
   mriUploading: boolean;
   uploadedFile: string | null;
-  simulateMriUpload: (fileName: string) => void;
+  predictedAiAnalysis: AIAnalysisResult | null;
+  uploadError: string | null;
+  uploadMriAndPredict: (params: {
+    patientId: string;
+    file: File;
+    age?: number | null;
+    mmse?: number | null;
+    cdr?: number | null;
+    cdrtot?: number | null;
+  }) => Promise<unknown>;
 }

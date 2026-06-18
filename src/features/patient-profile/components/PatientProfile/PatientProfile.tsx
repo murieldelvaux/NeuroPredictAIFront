@@ -1,7 +1,7 @@
 /**
  * NeuroPredict AI - Clinical Patient Profile Analyzer styled with Material-UI
  */
-import React from 'react';
+import React, { useRef } from 'react';
 import { 
   Box, 
   Card, 
@@ -18,7 +18,8 @@ import {
   Paper, 
   LinearProgress, 
   CircularProgress,
-  useTheme
+  useTheme,
+  Alert,
 } from '@mui/material';
 import { 
   ArrowBack as ArrowLeftIcon, 
@@ -49,7 +50,9 @@ import { usePatientProfile } from '../../hooks/usePatientProfile';
 export default function PatientProfile({ patientRecord, onBack }: PatientProfileProps) {
   const theme = useTheme();
   const { patient, demographics, history, cognitive, exam, imagingAnalysis, aiAnalysis } = patientRecord;
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
+  console.log(patient)
   // Utilize logic-less extraction hook
   const {
     activeTab,
@@ -60,8 +63,12 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
     setShowHeatmap,
     mriUploading,
     uploadedFile,
-    simulateMriUpload,
-  } = usePatientProfile();
+    predictedAiAnalysis,
+    uploadError,
+    uploadMriAndPredict,    
+    } = usePatientProfile();
+    
+  const mergedAiAnalysis = predictedAiAnalysis ?? aiAnalysis;
 
   // Cognitive Score evolution helper for charts
   const historySeries = cognitive?.history.map(item => ({
@@ -72,11 +79,11 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
   }));
 
   // SHAP explanatory factor series helper for charts
-  const shapData = aiAnalysis?.explainability.shapAttributions.map(item => ({
+  const shapData = mergedAiAnalysis?.explainability.shapAttributions.map(item => ({
     name: item.featureName,
-    value: Math.round(item.attributionValue * 100), // convert to percentage points
+    value: Math.round(item.attributionValue * 100),
     category: item.category
-  })) || [];
+    })) || [];
 
   // MRI scan simulation visualizer
   const renderInteractiveScan = () => {
@@ -665,11 +672,22 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                               id="file-input-mri-upload"
                               type="file"
                               accept=".nii,.nii.gz"
-                              onChange={(e) => {
-                                if (e.target.files && e.target.files[0]) {
-                                  simulateMriUpload(e.target.files[0].name);
-                                }
-                              }}
+                              ref={fileInputRef}
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+
+                                await uploadMriAndPredict({
+                                    patientId: patient.id,
+                                    file,
+                                    age: demographics?.age ?? patient.age,
+                                    mmse: cognitive?.mmse.score ?? null,
+                                    cdr: cognitive?.cdr.score ?? null,
+                                    cdrtot: cognitive?.cdr.score ?? null,
+                                });
+
+                                e.target.value = '';
+                             }}
                               style={{
                                 position: 'absolute',
                                 top: 0, right: 0, bottom: 0, left: 0,
@@ -677,9 +695,28 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                                 cursor: 'pointer'
                               }}
                             />
-                            <Button variant="contained" color="secondary" size="small" sx={{ fontWeight: 'bold' }}>
-                              Choose Voxel Dataset
+                            
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                size="small"
+                                sx={{ fontWeight: 'bold' }}
+                                onClick={() => fileInputRef.current?.click()}
+                            >
+                                Choose Voxel Dataset
                             </Button>
+                            {uploadError && (
+                                <Alert severity="error" sx={{ maxWidth: 420 }}>
+                                    {uploadError}
+                                </Alert>
+                                )}
+
+                                {uploadedFile && !uploadError && (
+                                <Alert severity="success" sx={{ maxWidth: 420 }}>
+                                    MRI enviada com sucesso: {uploadedFile}. A aba AI Predictor foi atualizada com a prediction mais recente.
+                                </Alert>
+                            )}
+
                           </Box>
                           {uploadedFile && (
                             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold' }}>
@@ -697,7 +734,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
               {activeTab === 'ai' && (
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }} id="panel-ai-explainability-root">
                   {/* Dynamic predictor gauge */}
-                  {aiAnalysis && (
+                  {mergedAiAnalysis && (
                     <Paper 
                       variant="outlined" 
                       id="card-ai-risk-gauge"
@@ -708,42 +745,42 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                         flexDirection: { xs: 'column', sm: 'row' }, 
                         alignItems: 'center', 
                         gap: 3,
-                        borderColor: aiAnalysis.riskCategory === 'High' ? 'error.light' : aiAnalysis.riskCategory === 'Moderate' ? 'warning.light' : 'success.light',
-                        bgcolor: aiAnalysis.riskCategory === 'High' ? 'rgba(239, 68, 68, 0.02)' : aiAnalysis.riskCategory === 'Moderate' ? 'rgba(245, 158, 11, 0.02)' : 'rgba(16, 185, 129, 0.02)'
+                        borderColor: mergedAiAnalysis.riskCategory === 'High' ? 'error.light' : mergedAiAnalysis.riskCategory === 'Moderate' ? 'warning.light' : 'success.light',
+                        bgcolor: mergedAiAnalysis.riskCategory === 'High' ? 'rgba(239, 68, 68, 0.02)' : mergedAiAnalysis.riskCategory === 'Moderate' ? 'rgba(245, 158, 11, 0.02)' : 'rgba(16, 185, 129, 0.02)'
                       }}
                     >
                       {/* Percent badge */}
                       <Box sx={{ position: 'relative', display: 'flex', shrink: 0 }}>
                         <CircularProgress 
                           variant="determinate" 
-                          value={Math.round(aiAnalysis.probability * 100)} 
+                          value={Math.round(mergedAiAnalysis.probability * 100)} 
                           size={72} 
                           thickness={5} 
-                          color={aiAnalysis.riskCategory === 'High' ? 'error' : aiAnalysis.riskCategory === 'Moderate' ? 'warning' : 'success'} 
+                          color={mergedAiAnalysis.riskCategory === 'High' ? 'error' : mergedAiAnalysis.riskCategory === 'Moderate' ? 'warning' : 'success'} 
                         />
                         <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'black' }}>
-                            {Math.round(aiAnalysis.probability * 100)}%
+                            {Math.round(mergedAiAnalysis.probability * 100)}%
                           </Typography>
                         </Box>
                       </Box>
                       
                       <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 'black', textTransform: 'uppercase', color: aiAnalysis.riskCategory === 'High' ? 'error.main' : aiAnalysis.riskCategory === 'Moderate' ? 'warning.main' : 'success.main' }}>
-                          Prognosis Prediction: {aiAnalysis.riskCategory} Risk AD
+                        <Typography variant="body2" sx={{ fontWeight: 'black', textTransform: 'uppercase', color: mergedAiAnalysis.riskCategory === 'High' ? 'error.main' : mergedAiAnalysis.riskCategory === 'Moderate' ? 'warning.main' : 'success.main' }}>
+                          Prognosis Prediction: {mergedAiAnalysis.riskCategory} Risk AD
                         </Typography>
                         <Typography variant="caption" sx={{ display: 'block', mt: 0.5, lineHeight: 1.4 }} color="text.secondary">
-                          {aiAnalysis.explainability.aiReasoningSummary}
+                          {mergedAiAnalysis.explainability.aiReasoningSummary}
                         </Typography>
                         <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', display: 'block', mt: 1, fontWeight: 'bold' }}>
-                          Confidence Quotient: {(aiAnalysis.confidenceScore * 100).toFixed(1)}% (PyTorch Attributions Calibrated)
+                          Confidence Quotient: {(mergedAiAnalysis.confidenceScore * 100).toFixed(1)}% (PyTorch Attributions Calibrated)
                         </Typography>
                       </Box>
                     </Paper>
                   )}
 
                   {/* SHAP attributions bar chart and risk descriptors columns */}
-                  {aiAnalysis && (
+                  {mergedAiAnalysis && (
                     <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.2fr 1.1fr' }, gap: 3.5 }} id="ai-detailed-scoring-grid">
                       {/* SHAP Bar Chart */}
                       <Box>
@@ -811,7 +848,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                             </Typography>
                             
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} id="risk-drivers-list">
-                              {aiAnalysis.explainability.keyRiskDrivers.map((driver, idx) => (
+                              {mergedAiAnalysis.explainability.keyRiskDrivers.map((driver, idx) => (
                                 <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'medium', color: theme.palette.mode === 'light' ? 'error.dark' : 'error.light' }}>
                                   • {driver}
                                 </Typography>
@@ -836,7 +873,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                             </Typography>
 
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} id="protective-drivers-list">
-                              {aiAnalysis.explainability.protectiveFactors.map((prot, idx) => (
+                              {mergedAiAnalysis.explainability.protectiveFactors.map((prot, idx) => (
                                 <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'medium', color: theme.palette.mode === 'light' ? 'success.dark' : 'success.light' }}>
                                   • {prot}
                                 </Typography>
