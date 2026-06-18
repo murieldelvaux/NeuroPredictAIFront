@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import type { MutationFnOptions } from '../../../lib/react-query/react-query';
+import type { UseMutationOptions } from '@tanstack/react-query';
 import { createPatient } from '../requests/createPatient';
 import { adaptPatientOut } from '../../dashboard/utils/adaptPatientOut';
 import type { CreatePatientVariables } from '../types/clinicalWorkflow.types';
@@ -7,11 +7,11 @@ import type { Patient } from '../../../types';
 import { patientsQueryKey } from '../../dashboard/react-queries/usePatients';
 
 export const useCreatePatient = (
-  options: MutationFnOptions<typeof createPatient> = {},
+  options: UseMutationOptions<Patient, unknown, CreatePatientVariables> = {},
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation({
+  return useMutation<Patient, unknown, CreatePatientVariables>({
     ...options,
     mutationFn: (variables: CreatePatientVariables): Promise<Patient> =>
       createPatient({

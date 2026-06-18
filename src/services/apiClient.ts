@@ -90,11 +90,16 @@ export function adaptPatientOut(p: PatientOut): Patient {
     ? normalize(rawCategory) as 'High' | 'Moderate' | 'Low'
     : score >= 0.6 ? 'High' : score >= 0.3 ? 'Moderate' : 'Low';
 
+  const gender =
+    p.gender === 'Male' || p.gender === 'Female' || p.gender === 'Other'
+      ? p.gender
+      : 'Other';
+
   return {
     id: p.id,
     name: p.name,
     age: p.age,
-    gender: p.gender ?? '—',
+    gender,
     mrn: p.mrn ?? '—',
     riskScore: Math.round(score * 100),   // converte 0.72 → 72 se o backend manda float 0-1
     riskCategory: category,
