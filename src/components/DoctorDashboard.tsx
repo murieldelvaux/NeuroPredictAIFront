@@ -349,17 +349,20 @@ export default function DoctorDashboard({
               </TableHead>
               <TableBody>
                 {filteredPatients.map(p => {
-                  const riskConfig = {
-                    High: { color: 'error' as const, label: `High (${p.riskScore}%)` },
-                    Moderate: { color: 'warning' as const, label: `Moderate (${p.riskScore}%)` },
-                    Low: { color: 'success' as const, label: `Low (${p.riskScore}%)` }
-                  }[p.riskCategory];
+                   const riskConfig = ({
+                      High: { color: 'error' as const, label: `High (${p.riskScore}%)` },
+                      Moderate: { color: 'warning' as const, label: `Moderate (${p.riskScore}%)` },
+                      Low: { color: 'success' as const, label: `Low (${p.riskScore}%)` }
+                    } as Record<string, { color: 'error' | 'warning' | 'success'; label: string }>)[p.riskCategory]
+                      ?? { color: 'default' as const, label: `Unknown (${p.riskScore ?? 0}%)` };
 
-                  const statusColor = {
-                    Completed: 'success' as const,
-                    'Pending Interpretation': 'primary' as const,
-                    'Awaiting MRI': 'default' as const
-                  }[p.status];
+                    const statusColor = ({
+                      Completed: 'success' as const,
+                      'Pending Interpretation': 'primary' as const,
+                      'Awaiting MRI': 'default' as const
+                    } as Record<string, 'success' | 'primary' | 'default' | 'warning' | 'error'>)[p.status]
+                      ?? 'default' as const;
+
 
                   return (
                     <TableRow 
