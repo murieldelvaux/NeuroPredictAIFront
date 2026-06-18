@@ -6,7 +6,7 @@ export interface Patient {
   id: string;
   name: string;
   age: number;
-  gender: 'Male' | 'Female' | 'Other';
+  sex: 'Male' | 'Female' | 'Other';
   mrn: string;
   riskScore: number; // 0 - 100
   riskCategory: 'High' | 'Moderate' | 'Low';
@@ -18,7 +18,7 @@ export interface PatientDemographics {
   id: string;
   name: string;
   age: number;
-  gender: 'Male' | 'Female' | 'Other';
+  sex: 'Male' | 'Female' | 'Other';
   mrn: string;
   dob: string;
   phone: string;

@@ -32,7 +32,7 @@ export const useCreatePatient = (
       return createPatient({
         name: variables.demographics.name,
         age: variables.demographics.age,
-        sex: genderMap[variables.demographics.gender] ?? 'O',
+        sex: genderMap[variables.demographics.sex] ?? 'O',
         date_of_birth: dob,
         clinical_data: {
           mmse: variables.cognitive.mmse,

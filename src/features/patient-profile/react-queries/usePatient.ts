@@ -19,7 +19,7 @@ type UsePatientOptions<TData = PatientRecord> = {
   options?: QueryFnOptions<PatientRecord, TData>;
 };
 
-const mapGender = (value: unknown): PatientDemographics['gender'] => {
+const mapGender = (value: unknown): PatientDemographics['sex'] => {
   if (value === 'Male' || value === 'Female' || value === 'Other') return value;
   if (value === 'M') return 'Male';
   if (value === 'F') return 'Female';
@@ -37,14 +37,15 @@ const normalizeList = (value: unknown): string[] =>
  */
 const mapDemographics = (detail: PatientDetailOut): PatientDemographics => {
   const d = detail.demographics ?? {};
+  console.log('Mapping demographics with detail:', d);
   return {
-    id: detail.id,
+    id: detail.patient.id,
     // name: prefer sub-object, fall back to root
-    name: d.name ?? detail.name,
+    name: d.name ?? detail.patient.name,
     // age: prefer sub-object, fall back to root
-    age: Number(d.age ?? detail.age ?? 0),
-    gender: mapGender(d.gender ?? detail.gender),
-    mrn: d.mrn ?? detail.mrn ?? '—',
+    age: Number(d.age ?? detail.patient.age ?? 0),
+    sex: mapGender(d.sex ?? detail.patient.sex),
+    mrn: d.mrn ?? detail.patient.mrn ?? '—',
     dob: d.date_of_birth ?? d.dob ?? '—',
     phone: d.phone ?? d.telephone ?? d.phone_encrypted ?? '—',
     email: d.email ?? d.secure_email ?? '—',
@@ -92,7 +93,7 @@ const mapCognitive = (detail: PatientDetailOut): CognitiveEvaluation => {
   const c = detail.cognitive ?? {};
   const rootAny = detail as any;
   const assessmentDate =
-    c.assessment_date ?? detail.last_evaluated ?? new Date().toISOString().split('T')[0];
+    c.assessment_date ?? detail.patient.last_evaluated ?? new Date().toISOString().split('T')[0];
 
   // Prefer nested, fall back to root-level fields that some backends return flat
   const mmse = Number(c.mmse ?? rootAny.mmse ?? 0);
@@ -100,7 +101,7 @@ const mapCognitive = (detail: PatientDetailOut): CognitiveEvaluation => {
   const cdr  = Number(c.cdr  ?? rootAny.cdr  ?? 0);
 
   return {
-    patientId: detail.id,
+    patientId: detail.patient.id,
     mmse: {
       score: mmse,
       maxScore: 30,
@@ -137,9 +138,9 @@ const mapExam = (detail: PatientDetailOut): ImagingExam | undefined => {
   if (!hasExam) return undefined;
 
   return {
-    id: String(e.id ?? `${detail.id}-mri`),
+    id: String(e.id ?? `${detail.patient.id}-mri`),
     scanType: (e.scan_type ?? 'MRI 3T') as ImagingExam['scanType'],
-    scanDate: e.scan_date ?? detail.last_evaluated ?? '—',
+    scanDate: e.scan_date ?? detail.patient.last_evaluated ?? '—',
     radiologistNotes: e.radiologist_notes ?? 'MRI uploaded for AI processing.',
     status: (e.status ?? 'Completed') as ImagingExam['status'],
     metadata: {
@@ -156,7 +157,7 @@ const mapImagingAnalysis = (detail: PatientDetailOut): ImagingAnalysisResult | u
   if (!Object.keys(ia).length) return undefined;
 
   return {
-    scanId: String(ia.scan_id ?? `${detail.id}-mri`),
+    scanId: String(ia.scan_id ?? `${detail.patient.id}-mri`),
     status: (ia.status ?? 'Success') as ImagingAnalysisResult['status'],
     hippocampalVolumeLeft: Number(ia.hippocampal_volume_left ?? ia.left_hippocampal_volume ?? 0),
     hippocampalVolumeRight: Number(ia.hippocampal_volume_right ?? ia.right_hippocampal_volume ?? 0),
@@ -171,7 +172,7 @@ const mapAIAnalysis = (detail: PatientDetailOut): AIAnalysisResult | null => {
   if (!Object.keys(ia).length) return null;
 
   return {
-    patientId: detail.id,
+    patientId: detail.patient.id,
     predictionDate: ia.prediction_date ?? ia.date ?? new Date().toISOString(),
     probability: Number(ia.probability ?? ia.score ?? 0),
     riskCategory: ia.risk_category ?? ia.risk ?? 'Low',
@@ -189,9 +190,9 @@ export const usePatient = <TData = PatientRecord>(
     queryKey: [patientQueryKey, id],
     queryFn: async () => {
       const detail = await getPatient(id);
-
+      console.log("detail before return:", detail);
       return {
-        patient: adaptPatientOut(detail),
+        patient: adaptPatientOut(detail.patient),
         demographics: mapDemographics(detail),
         history: mapHistory(detail),
         cognitive: mapCognitive(detail),
