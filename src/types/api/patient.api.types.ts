@@ -23,6 +23,7 @@ export type PatientCreatePayload = {
   sex: PatientSex;               // 'M' | 'F'
   date_of_birth?: string | null; // "YYYY-MM-DD"
   clinical_data?: ClinicalDataPayload | null;
+  education_years?: number | null;
 };
 
 export type PatientLastPrediction = {
@@ -55,9 +56,12 @@ export type PatientListItem = {
   status?: PatientStatus;
 };
 
+export type PatientResponseWithClinical = PatientResponse & {
+  clinical_data?: ClinicalDataPayload | null;
+};
 /** Resposta completa de GET /patients/:id */
 export type PatientDetailResponse = {
-  patient: PatientResponse;
+  patient: PatientResponseWithClinical;
   demographics?: Record<string, unknown>;
   history?: Record<string, unknown>;
   cognitive?: Record<string, unknown>;

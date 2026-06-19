@@ -27,7 +27,6 @@ export type PatientDemographics = {
   date_of_birth: string;
   phone: string;
   email: string;
-  educationYears: number;
 };
 
 export type ClinicalHistory = {
@@ -52,6 +51,7 @@ export type CognitiveEvaluation = {
   patientId: string;
   mmse: CognitiveScoreRange;
   moca: CognitiveScoreRange;
+  educationYears: number;
   cdr: {
     score: number;
     status: string;

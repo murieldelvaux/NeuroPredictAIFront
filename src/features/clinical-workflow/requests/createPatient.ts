@@ -12,7 +12,7 @@ const SEX_MAP: Record<string, 'M' | 'F'> = {
 export interface CreatePatientVariables {
   demographics: Omit<PatientDemographics, 'id'>;
   history: ClinicalHistory;
-  cognitive: { mmse: number; moca: number; cdr: number; cdrtot: number };
+  cognitive: { mmse: number; moca: number; cdr: number; cdrtot: number; educationYears: number };
 }
 
 export const createPatient = (vars: CreatePatientVariables): Promise<Patient> => {
@@ -34,8 +34,8 @@ export const createPatient = (vars: CreatePatientVariables): Promise<Patient> =>
       cdrtot: cognitive.cdrtot,
       comorbidities: history.comorbidities ?? [],
       family_history: hasFamilyHistory,
-      education_years: demographics.educationYears ?? 12,
     },
+    education_years: cognitive.educationYears ?? 12,
   };
 
   return neuroPredictServiceFetch<Patient>('/patients', {

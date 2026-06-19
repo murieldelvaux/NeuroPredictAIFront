@@ -55,7 +55,8 @@ function WorkspaceRoot({
     setActiveView('profile');
   };
 
-  console.log(selectedPatientId, activeDetail, patients);
+  console.log("---> Active Detail:", activeDetail);
+  console.log("---> Patients:", patients);
   const handleCreatePatientSubmit = (variables: any) => {
     createPatientMutation.mutate(variables, {
       onSuccess: (newPatient) => {
@@ -77,7 +78,7 @@ function WorkspaceRoot({
     <Layout
       activeView={activeView}
       onNavigate={(view) => setActiveView(view)}
-      selectedPatientName={activeDetail?.name}
+      selectedPatientName={activeDetail?.patient?.name}
       isDarkMode={isDarkMode}
       onToggleTheme={onToggleTheme}
     >
@@ -168,7 +169,7 @@ function WorkspaceRoot({
               </Box>
             ) : activeDetail ? (
               <PatientProfile
-                patientRecord={{ patient: activeDetail }}
+                patientRecord={activeDetail}
                 onBack={() => setActiveView('dashboard')}
               />
             ) : (

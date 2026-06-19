@@ -52,7 +52,19 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
   const { patient, demographics, history, cognitive, exam, imagingAnalysis } = patientRecord;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  console.log(patient)
+  const displayName = demographics?.name ?? patient.name;
+  const displayMrn = demographics?.mrn ?? patient.mrn;
+  const displayGender = demographics?.sex === 'F' ? 'Female' : demographics?.sex === 'M' ? 'Male' : patient.sex === 'F' ? 'Female' : patient.sex === 'M' ? 'Male' : 'Other';
+  const displayDob = demographics?.date_of_birth ?? '—';
+  const displayAge = demographics?.age ?? patient.age;
+  const displayEducation = cognitive?.educationYears ?? 0;
+  const displayPhone = demographics?.phone ?? '—';
+  const displayEmail = demographics?.email ?? '—';
+  const displayMmse = cognitive?.mmse?.score ?? 0;
+  const displayMoca = cognitive?.moca?.score ?? 0;
+  const displayCdr = cognitive?.cdr?.score ?? 0;
+
+  console.log("---> PatientProfile Rendered with patientRecord:", patientRecord);
   // Utilize logic-less extraction hook
   const {
     activeTab,
@@ -71,11 +83,11 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
   const mergedAiAnalysis = predictedAiAnalysis;
 
   // Cognitive Score evolution helper for charts
-  const historySeries = cognitive?.history.map(item => ({
+  const historySeries = (cognitive?.history ?? []).map((item) => ({
     name: item.date,
     MMSE: item.mmse,
     MoCA: item.moca,
-    CDR: item.cdr * 10 // scale CDR by 10 for better visualization on same axis
+    CDR: item.cdr * 10, // scale CDR by 10 for better visualization on same axis
   }));
 
   // SHAP explanatory factor series helper for charts
@@ -303,11 +315,11 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 'bold', tracking: '-0.02em', mb: 0.5 }}>
-                    {demographics?.name}
+                    {displayName}
                   </Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <UserIcon sx={{ fontSize: 13 }} />
-                    MRN: <Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'primary.main' }}>{demographics?.mrn}</Box>
+                    MRN: <Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'primary.main' }}>{displayMrn}</Box>
                   </Typography>
                 </Box>
                 <Chip 
@@ -323,27 +335,27 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
               <Box sx={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 2, fontSize: '12px' }} id="patient-metrics-demographic-list">
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>SEX / GENDER</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{demographics?.sex}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayGender}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>AGE</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{demographics?.age} Years</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayAge} Years</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>DATE OF BIRTH</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{demographics?.date_of_birth}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayDob}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>EDUCATIONAL HISTORY</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{demographics?.educationYears} Formal Academic Years</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayEducation} Formal Academic Years</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>TELEPHONE ENCRYPT</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace' }}>{demographics?.phone}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace' }}>{displayPhone}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>SECURE SYSTEM EMAIL</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{demographics?.email}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{displayEmail}</Typography>
                 </Box>
               </Box>
             </CardContent>
@@ -464,10 +476,10 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                     <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">MMSE SCORE</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{cognitive?.mmse.score} / 30</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMmse} / {cognitive?.mmse?.maxScore ?? 30}</Typography>
                         <Chip 
-                          label={cognitive?.mmse.status} 
-                          color={cognitive?.mmse.status === 'Severe' ? 'error' : cognitive?.mmse.status === 'Mild Cognitive Impairment' ? 'warning' : 'success'} 
+                          label={cognitive?.mmse?.status ?? 'Not Available'} 
+                          color={cognitive?.mmse?.status === 'Severe' ? 'error' : cognitive?.mmse?.status === 'Mild Cognitive Impairment' ? 'warning' : 'success'} 
                           size="small" 
                           sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
                         />
@@ -477,10 +489,10 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                     <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">MOCA SCORE</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{cognitive?.moca.score} / 30</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMoca} / {cognitive?.moca?.maxScore ?? 30}</Typography>
                         <Chip 
-                          label={cognitive?.moca.status} 
-                          color={cognitive?.moca.status === 'Severe' ? 'error' : cognitive?.moca.status === 'Mild Cognitive Impairment' ? 'warning' : 'success'} 
+                          label={cognitive?.moca?.status ?? 'Not Available'} 
+                          color={cognitive?.moca?.status === 'Severe' ? 'error' : cognitive?.moca?.status === 'Mild Cognitive Impairment' ? 'warning' : 'success'} 
                           size="small" 
                           sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
                         />
@@ -490,9 +502,9 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                     <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CDR CLINICAL RATING</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{cognitive?.cdr.score} / 3.0</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayCdr} / 3.0</Typography>
                         <Chip 
-                          label={cognitive?.cdr.status} 
+                          label={cognitive?.cdr?.status ?? 'Not Available'} 
                           color="info" 
                           size="small" 
                           sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
