@@ -1,11 +1,15 @@
 import { useState } from 'react';
-import { PatientDemographics, ClinicalHistory, ImagingExam } from '../types';
-import { PatientCreateClinicalData } from '../types/api';
+import type {
+  PatientDemographics,
+  ClinicalHistory,
+  ImagingExam,
+  ClinicalDataPayload,
+} from '../types';
 
 type WorkflowOnSave = (data: {
   demographics: Omit<PatientDemographics, 'id'>;
   history: ClinicalHistory;
-  cognitive: PatientCreateClinicalData;
+  cognitive: ClinicalDataPayload;
   imaging?: Pick<ImagingExam, 'scanType' | 'scanDate' | 'radiologistNotes'> & { fileUploaded?: string };
 }) => void;
 
@@ -16,7 +20,7 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [age, setAge] = useState<number>(70);
-  const [sex, setSex] = useState<PatientDemographics['sex']>('Male');
+  const [sex, setSex] = useState<PatientDemographics['sex']>('M');
   const [date_of_birth, setDateOfBirth] = useState('1956-06-20');
   const [mrn] = useState<string>(() => `MRN-${Math.floor(10000 + Math.random() * 90000)}-${Math.floor(10 + Math.random() * 89)}Z`);
   const [educationYears, setEducationYears] = useState<number>(14);
@@ -95,12 +99,12 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
     setSimulationPercentage(10);
     setTerminalLogs([
       "[SYSTEM] Initializing clinical telemetry handshake...",
-      "[SYSTEM] Merging Patient Demographics: Age 70, Education 14y.",
+      `[SYSTEM] Merging Patient Demographics: Age ${age}, Education ${educationYears}y.`,
       `[DATABASE] Registered diagnostic target under ${mrn}`
     ]);
 
     const steps = [
-      { p: 25, log: "[CORE] Parsing MMSE (24) vs MoCA (22) cognitive scales..." },
+      { p: 25, log: "[CORE] Parsing MMSE vs MoCA cognitive scales..." },
       { p: 40, log: "[CORE] Calibrating ApoE biomarker weights..." },
       { p: 60, log: "[IMAGING] Standardizing coronal cross-slices to 256x256 voxel tensor..." },
       { p: 75, log: "[ML-ENGINE] Deploying PyTorch late-onset diagnostic classifier models..." },
