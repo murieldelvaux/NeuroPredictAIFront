@@ -9,6 +9,7 @@ export type { AIAnalysisResult, FeatureImportance } from './prediction.types';
 export type { MedicalWorkflowSession, WorkflowStep } from './workflow.types';
 
 export type { PatientCreatePayload, ClinicalDataPayload, PatientResponse,
-  PatientListItem, PatientDetailResponse, HealthResponse } from './api/patient.api.types';
+  PatientListItem, PatientDetailResponse, PatientLastPrediction,
+  HealthResponse } from './api/patient.api.types';
 
 export type { PredictionResponse, PredictPayload, FeatureImportanceResponse } from './api/prediction.api.types';

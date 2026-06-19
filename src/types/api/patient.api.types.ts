@@ -20,19 +20,9 @@ export type ClinicalDataPayload = {
 export type PatientCreatePayload = {
   name: string;
   age: number;
-  sex: PatientSex;              // 'M' | 'F'
+  sex: PatientSex;               // 'M' | 'F'
   date_of_birth?: string | null; // "YYYY-MM-DD"
   clinical_data?: ClinicalDataPayload | null;
-};
-
-export type PatientResponse = {
-  id: string;
-  name: string;
-  age: number;
-  sex: PatientSex;
-  date_of_birth: string;        // "dd/mm/aaaa" (formatado pelo backend)
-  created_at: string;           // "dd/mm/aaaa"
-  last_prediction?: PatientLastPrediction | null;
 };
 
 export type PatientLastPrediction = {
@@ -41,6 +31,18 @@ export type PatientLastPrediction = {
   confidence: number;
 };
 
+/** Resposta de POST /patients e GET /patients/:id (campo .patient) */
+export type PatientResponse = {
+  id: string;
+  name: string;
+  age: number;
+  sex: PatientSex;
+  date_of_birth: string;
+  created_at: string;
+  last_prediction?: PatientLastPrediction | null;
+};
+
+/** Item do array de GET /patients */
 export type PatientListItem = {
   id: string;
   name: string;
@@ -53,7 +55,14 @@ export type PatientListItem = {
   status?: PatientStatus;
 };
 
+/** Resposta completa de GET /patients/:id */
 export type PatientDetailResponse = {
   patient: PatientResponse;
-  predictions: PatientLastPrediction[];
+  demographics?: Record<string, unknown>;
+  history?: Record<string, unknown>;
+  cognitive?: Record<string, unknown>;
+  exam?: Record<string, unknown>;
+  imaging_analysis?: Record<string, unknown>;
+  ai_analysis?: Record<string, unknown>;
+  predictions?: PatientLastPrediction[];
 };

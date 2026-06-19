@@ -1,49 +1,40 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import type { UseMutationOptions } from '@tanstack/react-query';
 import { createPatient } from '../requests/createPatient';
-import { adaptPatientOut } from '../../dashboard/utils/adaptPatientOut';
+import type { PatientResponse } from '../../../types';
 import type { CreatePatientVariables } from '../types/clinicalWorkflow.types';
-import type { Patient } from '../../../types';
+import { mapSexToApi } from '../../../lib/mappers/patient.mappers';
 import { patientsQueryKey } from '../../dashboard/react-queries/usePatients';
 
 export const useCreatePatient = (
-  options: UseMutationOptions<Patient, unknown, CreatePatientVariables> = {},
+  options: UseMutationOptions<PatientResponse, unknown, CreatePatientVariables> = {},
 ) => {
   const queryClient = useQueryClient();
 
-  return useMutation<Patient, unknown, CreatePatientVariables>({
+  return useMutation<PatientResponse, unknown, CreatePatientVariables>({
     ...options,
-    mutationFn: (variables: CreatePatientVariables): Promise<Patient> => {
-      const genderMap: Record<string, 'M' | 'F' | 'O'> = {
-        Male: 'M',
-        Female: 'F',
-        Other: 'O',
-      };
-
-      const dob = variables.demographics.date_of_birth
-        ?? new Date(
-            new Date().getFullYear() - variables.demographics.age,
-            0,
-            1,
-          )
-            .toISOString()
-            .split('T')[0];
+    mutationFn: (variables: CreatePatientVariables) => {
+      const dob =
+        variables.demographics.date_of_birth ??
+        new Date(new Date().getFullYear() - variables.demographics.age, 0, 1)
+          .toISOString()
+          .split('T')[0];
 
       return createPatient({
-        name: variables.demographics.name,
-        age: variables.demographics.age,
-        sex: genderMap[variables.demographics.sex] ?? 'O',
+        name:          variables.demographics.name,
+        age:           variables.demographics.age,
+        sex:           mapSexToApi(variables.demographics.sex),
         date_of_birth: dob,
         clinical_data: {
-          mmse: variables.cognitive.mmse,
-          moca: variables.cognitive.moca,
-          cdr: variables.cognitive.cdr,
-          cdrtot: variables.cognitive.cdrtot,          // fix: use dedicated cdrtot field
-          comorbidities: variables.history.comorbidities ?? [],
-          family_history: (variables.history.familyHistory?.dementiaCount ?? 0) > 0,
+          mmse:            variables.cognitive.mmse,
+          moca:            variables.cognitive.moca,
+          cdr:             variables.cognitive.cdr,
+          cdrtot:          variables.cognitive.cdrtot,
+          comorbidities:   variables.history.comorbidities ?? [],
+          family_history:  (variables.history.familyHistory?.dementiaCount ?? 0) > 0,
           education_years: variables.demographics.educationYears ?? 12,
         },
-      }).then(adaptPatientOut);
+      });
     },
     onSuccess: (...args) => {
       queryClient.invalidateQueries({ queryKey: [patientsQueryKey] });
