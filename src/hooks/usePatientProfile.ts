@@ -1,2 +1,1 @@
-// Canonical version moved to feature folder.
-export { usePatientProfile } from '../features/patient-profile/hooks/usePatientProfile';
+export { usePredict as usePatientProfile } from '../features/prediction/react-queries/usePredict';
