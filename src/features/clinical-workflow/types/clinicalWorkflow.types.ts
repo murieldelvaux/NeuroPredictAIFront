@@ -1,19 +1,25 @@
-import type { PatientDemographics, ClinicalHistory } from '../../../types';
+import type { PatientSex } from '../../../types';
 
-export interface CreatePatientVariables {
-  demographics: Omit<PatientDemographics, 'id'>;
-  history: ClinicalHistory;
-  cognitive: { mmse: number; moca: number; cdr: number; cdrtot: number };
-  imaging?: {
-    scanType: string;
-    scanDate: string;
-    radiologistNotes: string;
-    fileUploaded?: string;
-  };
-}
+export type ClinicalWorkflowProps = {
+  onPatientSaved?: (patientId: string) => void;
+};
 
-export interface UseClinicalEvaluationVariables {
-  patientId: string;
-  cognitive: { mmse: number; moca: number; cdr: number; cdrtot: number };
-  historyUpdate?: Partial<ClinicalHistory>;
-}
+export type WorkflowDemographicsForm = {
+  name: string;
+  age: number;
+  sex: PatientSex;
+  date_of_birth: string;
+  educationYears: number;
+  mrn?: string;
+  phone?: string;
+  email?: string;
+};
+
+export type WorkflowClinicalForm = {
+  mmse: number;
+  moca: number;
+  cdr: number;
+  cdrtot: number;
+  comorbidities: string[];
+  family_history: boolean;
+};
