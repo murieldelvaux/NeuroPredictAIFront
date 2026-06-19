@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { useState } from 'react';
 import { predict } from '../requests/predict';
 import { adaptPredictionOut } from '../requests/adaptPredictionOut';
@@ -43,3 +44,15 @@ export const usePredict = () => {
     uploadMriAndPredict,
   };
 };
+=======
+import { useMutation } from '@tanstack/react-query';
+import { predict } from '../requests/predict';
+import { adaptPredictionOut } from '@/clients/adapters';
+import type { PredictPayload } from '@/types/api';
+
+export const usePredict = () =>
+  useMutation({
+    mutationFn: (payload: PredictPayload) =>
+      predict(payload).then(adaptPredictionOut),
+  });
+>>>>>>> 1bcdc574a8237f466f0f98432f6404c34165c7a4
