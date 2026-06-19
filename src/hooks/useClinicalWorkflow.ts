@@ -134,7 +134,6 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
         date_of_birth,
         phone: "(555) 019-2091",
         email: `${firstName.toLocaleLowerCase()}.${lastName.toLocaleLowerCase()}@healthops.org`,
-        educationYears,
       },
       history: {
         symptoms: symptomsList,

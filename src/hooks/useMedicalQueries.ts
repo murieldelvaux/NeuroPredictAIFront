@@ -5,4 +5,4 @@
  */
 export { useGetPatients as usePatients } from '../features/dashboard/react-queries/useGetPatients';
 export { useGetPatient as usePatient } from '../features/patient-profile/react-queries/useGetPatient';
-export { useCreatePatient } from '../features/patients/react-queries/useCreatePatient';
+export { useCreatePatient } from '../features/clinical-workflow/react-queries/useCreatePatient';

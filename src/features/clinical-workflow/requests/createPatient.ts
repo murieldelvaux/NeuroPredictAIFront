@@ -1,21 +1,22 @@
-import { neuroPredictServiceFetch } from '@/clients/neuroPredictServiceFetch';
-import type { PatientCreatePayload, PatientOut } from '@/types/api';
-import type { PatientDemographics, ClinicalHistory } from '@/types';
+import { neuroPredictServiceFetch } from '@/src/clients/neuroPredictServiceFetch';
+import type {
+  PatientCreatePayload
+} from '@/src/types/api';
+import type { PatientDemographics, ClinicalHistory, Patient } from '@/src/types';
 
-const SEX_MAP: Record<'Male' | 'Female' | 'Other', 'M' | 'F' | 'O'> = {
+const SEX_MAP: Record<string, 'M' | 'F'> = {
   Male: 'M',
   Female: 'F',
-  Other: 'O',
 };
 
-export interface CreatePatientInput {
+export interface CreatePatientVariables {
   demographics: Omit<PatientDemographics, 'id'>;
   history: ClinicalHistory;
-  cognitive: { mmse: number; moca: number; cdr: number; cdrtot: number };
+  cognitive: { mmse: number; moca: number; cdr: number; cdrtot: number; educationYears: number };
 }
 
-export const createPatient = (input: CreatePatientInput): Promise<PatientOut> => {
-  const { demographics, history, cognitive } = input;
+export const createPatient = (vars: CreatePatientVariables): Promise<Patient> => {
+  const { demographics, history, cognitive } = vars;
 
   const hasFamilyHistory = Array.isArray(history.familyHistory?.alzheimersRelation)
     ? history.familyHistory.alzheimersRelation.length > 0
@@ -33,11 +34,11 @@ export const createPatient = (input: CreatePatientInput): Promise<PatientOut> =>
       cdrtot: cognitive.cdrtot,
       comorbidities: history.comorbidities ?? [],
       family_history: hasFamilyHistory,
-      education_years: demographics.educationYears ?? 12,
     },
+    education_years: cognitive.educationYears ?? 12,
   };
 
-  return neuroPredictServiceFetch<PatientOut>('/patients', {
+  return neuroPredictServiceFetch<Patient>('/patients', {
     method: 'POST',
     body: JSON.stringify(payload),
   });

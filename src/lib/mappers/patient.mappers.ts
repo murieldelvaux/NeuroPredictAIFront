@@ -105,7 +105,6 @@ export const mapDemographics = (detail: PatientDetailResponse): PatientDemograph
     date_of_birth: (p.date_of_birth ?? d.date_of_birth ?? '—') as string,
     phone: (d.phone ?? d.telephone ?? '—') as string,
     email: (d.email ?? '—') as string,
-    educationYears: Number(d.education_years ?? d.educationYears ?? 0),
   };
 };
 
@@ -124,16 +123,15 @@ export const mapHistory = (detail: PatientDetailResponse): ClinicalHistory => {
 };
 
 export const mapCognitive = (detail: PatientDetailResponse): CognitiveEvaluation => {
-  const c = detail.cognitive ?? {};
+  const c = (detail.patient.clinical_data ?? {}) as Record<string, unknown>;
   const assessmentDate =
-    (c.assessment_date as string | undefined) ??
     detail.patient.date_of_birth ??
     new Date().toISOString().split('T')[0];
 
-  const mmse = Number(c.mmse ?? 0);
+  const mmse = Number(c.mmse?? 0);
   const moca = Number(c.moca ?? 0);
   const cdr  = Number(c.cdr  ?? 0);
-
+  console.log("---> mapCognitive:", detail);
   return {
     patientId: detail.patient.id,
     mmse: {
@@ -153,6 +151,7 @@ export const mapCognitive = (detail: PatientDetailResponse): CognitiveEvaluation
       status: mapCognitiveStatus(cdr, 'cdr'),
       assessmentDate,
     },
+    educationYears: Number(c.education_years ?? 12),
     history:
       Array.isArray(c.history) && (c.history as unknown[]).length
         ? (c.history as Record<string, unknown>[]).map((item) => ({
@@ -210,9 +209,10 @@ export const mapAIAnalysis = (detail: PatientDetailResponse): AIAnalysisResult |
     patientId:      detail.patient.id,
     predictionDate: (ia.prediction_date as string | undefined) ?? (ia.date as string | undefined) ?? new Date().toISOString(),
     probability:    Number(ia.probability ?? ia.score ?? 0),
-    riskCategory:   (ia.risk_category as string | undefined) ?? (ia.risk as string | undefined) ?? 'Low',
-    modelVersion:   (ia.model_version  as string | undefined) ?? (ia.version as string | undefined) ?? 'unknown',
-    explanation:    (ia.explanation ?? ia.explain ?? null) as AIAnalysisResult['explanation'],
+    confidenceScore: Number(ia.confidence_score ?? ia.confidence ?? 0),
+    riskCategory:   mapRiskCategory((ia.risk_category as string | undefined) ?? (ia.risk as string | undefined) ?? 'Low', Number(ia.probability ?? ia.score ?? 0)),
+    // model version field removed to match AIAnalysisResult type
+    explainability: (ia.explanation ?? ia.explain ?? null) as AIAnalysisResult['explainability'],
   };
 };
 

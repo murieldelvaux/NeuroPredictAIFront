@@ -1,5 +1,5 @@
 import type { PatientOut } from '@/types/api';
-import type { Patient } from '@/types';
+import type { Patient } from '@/src/types';
 
 export function adaptPatientOut(p: PatientOut): Patient {
   const score = p.risk_score ?? 0;

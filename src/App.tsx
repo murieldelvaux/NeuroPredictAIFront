@@ -22,10 +22,10 @@ import Layout from './features/components/Layout/Layout';
 import DoctorDashboard from './features/dashboard/components/DoctorDashboard/DoctorDashboard';
 import PatientProfile from './features/patient-profile/components/PatientProfile/PatientProfile';
 import ClinicalWorkflow from './features/clinical-workflow/components/ClinicalWorkflow/ClinicalWorkflow';
-import { usePatients } from './features/dashboard/react-queries/usePatients';
-import { usePatient } from './features/patient-profile/react-queries/usePatient';
+
 import { useCreatePatient } from './features/clinical-workflow/react-queries/useCreatePatient';
-import { predictionApiService } from './services/apiClient';
+import { useGetPatients } from './features/dashboard/react-queries/useGetPatients';
+import { useGetPatient } from './features/patient-profile/react-queries/useGetPatient';
 
 function WorkspaceRoot({
   isDarkMode,
@@ -44,9 +44,9 @@ function WorkspaceRoot({
     type: 'success' | 'info' | 'error';
   } | null>(null);
 
-  const { data: patients = [], isLoading: listLoading } = usePatients();
+  const { data: patients = [], isLoading: listLoading } = useGetPatients();
   // FIX: pass empty string when null so the query is disabled (enabled: !!id)
-  const { data: activeDetail, isLoading: detailLoading } = usePatient(selectedPatientId ?? '');
+  const { data: activeDetail, isLoading: detailLoading } = useGetPatient(selectedPatientId ?? '');
   const createPatientMutation = useCreatePatient();
 
   // FIX: set selectedPatientId then navigate to profile
@@ -55,39 +55,14 @@ function WorkspaceRoot({
     setActiveView('profile');
   };
 
-  console.log(selectedPatientId, activeDetail, patients);
+  console.log("---> Active Detail:", activeDetail);
+  console.log("---> Patients:", patients);
   const handleCreatePatientSubmit = (variables: any) => {
     createPatientMutation.mutate(variables, {
       onSuccess: (newPatient) => {
         // Navigate to profile immediately after creation
         setSelectedPatientId(newPatient.id);
         setActiveView('profile');
-
-        // Fire prediction with the newly created patient data
-        predictionApiService
-          .predict({
-            patient_id: newPatient.id,
-            age:    variables.demographics?.age    ?? newPatient.age,
-            mmse:   variables.cognitive?.mmse,
-            cdr:    variables.cognitive?.cdr,
-            cdrtot: variables.cognitive?.cdr,
-            mri_file: null,
-          })
-          .then(() => {
-            setToastMessage({
-              text: `Patient ${newPatient.name} committed and prediction generated successfully.`,
-              type: 'success',
-            });
-          })
-          .catch((predErr: any) => {
-            setToastMessage({
-              text: `Patient saved, but prediction failed: ${predErr.message}`,
-              type: 'info',
-            });
-          })
-          .finally(() => {
-            setTimeout(() => setToastMessage(null), 6000);
-          });
       },
       onError: (err: any) => {
         setToastMessage({
