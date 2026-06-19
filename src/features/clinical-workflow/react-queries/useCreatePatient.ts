@@ -20,7 +20,7 @@ export const useCreatePatient = (
         Other: 'O',
       };
 
-      const dob = variables.demographics.dob
+      const dob = variables.demographics.date_of_birth
         ?? new Date(
             new Date().getFullYear() - variables.demographics.age,
             0,
@@ -38,7 +38,7 @@ export const useCreatePatient = (
           mmse: variables.cognitive.mmse,
           moca: variables.cognitive.moca,
           cdr: variables.cognitive.cdr,
-          cdrtot: variables.cognitive.cdr,
+          cdrtot: variables.cognitive.cdrtot,          // fix: use dedicated cdrtot field
           comorbidities: variables.history.comorbidities ?? [],
           family_history: (variables.history.familyHistory?.dementiaCount ?? 0) > 0,
           education_years: variables.demographics.educationYears ?? 12,

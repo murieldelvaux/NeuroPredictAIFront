@@ -55,7 +55,7 @@ function WorkspaceRoot({
     setActiveView('profile');
   };
 
-  console.log(selectedPatientId, activeDetail);
+  console.log(selectedPatientId, activeDetail, patients);
   const handleCreatePatientSubmit = (variables: any) => {
     createPatientMutation.mutate(variables, {
       onSuccess: (newPatient) => {

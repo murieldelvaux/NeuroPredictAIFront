@@ -10,6 +10,7 @@ export interface PatientOut {
   name: string;
   age: number;
   sex: 'Male' | 'Female' | 'Other';
+  date_of_birth: string;
   mrn: string;
   risk_score: number;
   risk_category: 'Low' | 'Moderate' | 'High';
