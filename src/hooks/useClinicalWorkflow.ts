@@ -1,22 +1,23 @@
 import { useState } from 'react';
-import { PatientDemographics, ClinicalHistory } from '../types';
+import { PatientDemographics, ClinicalHistory, ImagingExam } from '../types';
+import { PatientCreateClinicalData } from '../types/api';
 
-export function useClinicalWorkflow(
-  onSave: (data: {
-    demographics: Omit<PatientDemographics, 'id'>;
-    history: ClinicalHistory;
-    cognitive: { mmse: number; moca: number; cdr: number; cdrtot: number };
-    imaging?: { scanType: string; scanDate: string; radiologistNotes: string; fileUploaded?: string };
-  }) => void
-) {
+type WorkflowOnSave = (data: {
+  demographics: Omit<PatientDemographics, 'id'>;
+  history: ClinicalHistory;
+  cognitive: PatientCreateClinicalData;
+  imaging?: Pick<ImagingExam, 'scanType' | 'scanDate' | 'radiologistNotes'> & { fileUploaded?: string };
+}) => void;
+
+export function useClinicalWorkflow(onSave: WorkflowOnSave) {
   const [step, setStep] = useState<number>(1);
 
   // STEP 1 State: Demographics
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [age, setAge] = useState<number>(70);
-  const [sex, setSex] = useState<'Male' | 'Female' | 'Other'>('Male');
-  const [dob, setDob] = useState('1956-06-20');
+  const [sex, setSex] = useState<PatientDemographics['sex']>('Male');
+  const [date_of_birth, setDateOfBirth] = useState('1956-06-20');
   const [mrn] = useState<string>(() => `MRN-${Math.floor(10000 + Math.random() * 90000)}-${Math.floor(10 + Math.random() * 89)}Z`);
   const [educationYears, setEducationYears] = useState<number>(14);
 
@@ -38,11 +39,10 @@ export function useClinicalWorkflow(
   const [mmseScore, setMmseScore] = useState<number>(24);
   const [mocaScore, setMocaScore] = useState<number>(22);
   const [cdrScore, setCdrScore] = useState<number>(0.5);
-  // cdrtot is the CDR sum-of-boxes — tracked separately from the global CDR
   const [cdrtotScore, setCdrtotScore] = useState<number>(0.5);
 
   // STEP 4 State: Imaging Details
-  const [scanType, setScanType] = useState<'MRI 3T' | 'PET-FDG' | 'CT Scan'>('MRI 3T');
+  const [scanType, setScanType] = useState<ImagingExam['scanType']>('MRI 3T');
   const [scanDate, setScanDate] = useState('2026-06-10');
   const [radiologistNotes, setRadiologistNotes] = useState('Subcortical vascular parameters are constant. No distinct cortical anomalies reported.');
   const [customFileUploaded, setCustomFileUploaded] = useState<string | null>(null);
@@ -52,7 +52,6 @@ export function useClinicalWorkflow(
   const [simulationRunning, setSimulationRunning] = useState<boolean>(false);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
-  // Helpers for list additions
   const addSymptom = () => {
     if (symptomsInput.trim()) {
       setSymptomsList([...symptomsList, symptomsInput.trim()]);
@@ -91,7 +90,6 @@ export function useClinicalWorkflow(
     }
   };
 
-  // Run Simulated PyTorch & MONAI diagnostics pipeline
   const runAIPipeline = () => {
     setSimulationRunning(true);
     setSimulationPercentage(10);
@@ -116,7 +114,7 @@ export function useClinicalWorkflow(
         setTerminalLogs(prev => [...prev, stepItem.log]);
         if (stepItem.p === 100) {
           setSimulationRunning(false);
-          setStep(6); // automatically transition to Results Review!
+          setStep(6);
         }
       }, (index + 1) * 800);
     });
@@ -127,35 +125,38 @@ export function useClinicalWorkflow(
       demographics: {
         name: `${firstName} ${lastName}`.trim() || "Anonymous Patient",
         age,
-        sex,           // fix: was "gender" — PatientDemographics uses "sex"
+        sex,
         mrn,
-        dob,
+        date_of_birth,
         phone: "(555) 019-2091",
         email: `${firstName.toLocaleLowerCase()}.${lastName.toLocaleLowerCase()}@healthops.org`,
-        educationYears
+        educationYears,
       },
       history: {
         symptoms: symptomsList,
         familyHistory: {
           alzheimersRelation: hasFamilyHistory ? [familyRelation] : [],
-          dementiaCount: hasFamilyHistory ? dementiaCount : 0
+          dementiaCount: hasFamilyHistory ? dementiaCount : 0,
         },
         riskFactors: selectedRiskFactors,
         comorbidities: selectedComorbidities,
-        medications: medicationsList
+        medications: medicationsList,
       },
       cognitive: {
         mmse: mmseScore,
         moca: mocaScore,
         cdr: cdrScore,
-        cdrtot: cdrtotScore,  // fix: separate cdrtot field
+        cdrtot: cdrtotScore,
+        comorbidities: selectedComorbidities,
+        family_history: hasFamilyHistory,
+        education_years: educationYears,
       },
       imaging: {
         scanType,
         scanDate,
         radiologistNotes,
-        fileUploaded: customFileUploaded || undefined
-      }
+        fileUploaded: customFileUploaded || undefined,
+      },
     });
   };
 
@@ -170,8 +171,8 @@ export function useClinicalWorkflow(
     setAge,
     sex,
     setSex,
-    dob,
-    setDob,
+    date_of_birth,
+    setDateOfBirth,
     mrn,
     educationYears,
     setEducationYears,
