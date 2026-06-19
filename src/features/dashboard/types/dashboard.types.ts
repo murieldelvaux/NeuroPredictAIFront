@@ -1,21 +1,19 @@
-import type { Patient } from '../../../types';
+import type { PatientListItem } from '../../../types';
 
-export type RiskFilter = 'ALL' | 'High' | 'Moderate' | 'Low';
-export type StatusFilter = 'ALL' | 'Completed' | 'Pending Interpretation' | 'Awaiting MRI';
+export type DoctorDashboardProps = {
+  onSelectPatient: (patientId: string) => void;
+};
 
-export interface DashboardStats {
-  total: number;
+export type DashboardStats = {
+  totalPatients: number;
   highRisk: number;
-  awaitingMRI: number;
-  avgRisk: number;
-}
+  pendingReview: number;
+  completedToday: number;
+};
 
-export interface UseDoctorDashboardReturn extends DashboardStats {
-  searchTerm: string;
-  setSearchTerm: (v: string) => void;
-  riskFilter: RiskFilter;
-  setRiskFilter: (v: RiskFilter) => void;
-  statusFilter: StatusFilter;
-  setStatusFilter: (v: StatusFilter) => void;
-  filteredPatients: Patient[];
-}
+export type DashboardState = {
+  patients: PatientListItem[];
+  stats: DashboardStats;
+  isLoading: boolean;
+  error: string | null;
+};

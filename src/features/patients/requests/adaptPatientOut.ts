@@ -1,5 +1,5 @@
-import type { PatientOut } from '../../../types/api';
-import type { Patient } from '../../../types';
+import type { PatientOut } from '@/types/api';
+import type { Patient } from '@/types';
 
 export function adaptPatientOut(p: PatientOut): Patient {
   const score = p.risk_score ?? 0;
@@ -18,16 +18,14 @@ export function adaptPatientOut(p: PatientOut): Patient {
         ? 'Moderate'
         : 'Low';
 
-  const gender = (sex: string) => {
-    return sex === 'F' ? 'Female' : sex === 'M' ? 'Male' : 'Other';
-  };
-
+  const sex =
+    p.sex === 'Male' || p.sex === 'Female' || p.sex === 'Other' ? p.sex : 'Other';
 
   return {
     id: p.id,
     name: p.name,
     age: p.age,
-    sex: gender(p.sex),
+    sex,
     mrn: p.mrn ?? '—',
     riskScore: Math.round(score * 100),
     riskCategory: category,

@@ -49,7 +49,7 @@ import { usePatientProfile } from '../../hooks/usePatientProfile';
 
 export default function PatientProfile({ patientRecord, onBack }: PatientProfileProps) {
   const theme = useTheme();
-  const { patient, demographics, history, cognitive, exam, imagingAnalysis, aiAnalysis } = patientRecord;
+  const { patient, demographics, history, cognitive, exam, imagingAnalysis } = patientRecord;
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   console.log(patient)
@@ -68,7 +68,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
     uploadMriAndPredict,    
     } = usePatientProfile();
     
-  const mergedAiAnalysis = predictedAiAnalysis ?? aiAnalysis;
+  const mergedAiAnalysis = predictedAiAnalysis;
 
   // Cognitive Score evolution helper for charts
   const historySeries = cognitive?.history.map(item => ({
