@@ -5,7 +5,7 @@ export function useClinicalWorkflow(
   onSave: (data: {
     demographics: Omit<PatientDemographics, 'id'>;
     history: ClinicalHistory;
-    cognitive: { mmse: number; moca: number; cdr: number };
+    cognitive: { mmse: number; moca: number; cdr: number; cdrtot: number };
     imaging?: { scanType: string; scanDate: string; radiologistNotes: string; fileUploaded?: string };
   }) => void
 ) {
@@ -15,7 +15,7 @@ export function useClinicalWorkflow(
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [age, setAge] = useState<number>(70);
-  const [gender, setGender] = useState<'Male' | 'Female' | 'Other'>('Male');
+  const [sex, setSex] = useState<'Male' | 'Female' | 'Other'>('Male');
   const [dob, setDob] = useState('1956-06-20');
   const [mrn] = useState<string>(() => `MRN-${Math.floor(10000 + Math.random() * 90000)}-${Math.floor(10 + Math.random() * 89)}Z`);
   const [educationYears, setEducationYears] = useState<number>(14);
@@ -38,6 +38,8 @@ export function useClinicalWorkflow(
   const [mmseScore, setMmseScore] = useState<number>(24);
   const [mocaScore, setMocaScore] = useState<number>(22);
   const [cdrScore, setCdrScore] = useState<number>(0.5);
+  // cdrtot is the CDR sum-of-boxes — tracked separately from the global CDR
+  const [cdrtotScore, setCdrtotScore] = useState<number>(0.5);
 
   // STEP 4 State: Imaging Details
   const [scanType, setScanType] = useState<'MRI 3T' | 'PET-FDG' | 'CT Scan'>('MRI 3T');
@@ -125,7 +127,7 @@ export function useClinicalWorkflow(
       demographics: {
         name: `${firstName} ${lastName}`.trim() || "Anonymous Patient",
         age,
-        gender,
+        sex,           // fix: was "gender" — PatientDemographics uses "sex"
         mrn,
         dob,
         phone: "(555) 019-2091",
@@ -145,7 +147,8 @@ export function useClinicalWorkflow(
       cognitive: {
         mmse: mmseScore,
         moca: mocaScore,
-        cdr: cdrScore
+        cdr: cdrScore,
+        cdrtot: cdrtotScore,  // fix: separate cdrtot field
       },
       imaging: {
         scanType,
@@ -165,8 +168,8 @@ export function useClinicalWorkflow(
     setLastName,
     age,
     setAge,
-    gender,
-    setGender,
+    sex,
+    setSex,
     dob,
     setDob,
     mrn,
@@ -198,6 +201,8 @@ export function useClinicalWorkflow(
     setMocaScore,
     cdrScore,
     setCdrScore,
+    cdrtotScore,
+    setCdrtotScore,
     scanType,
     setScanType,
     scanDate,
