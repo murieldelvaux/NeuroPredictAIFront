@@ -331,7 +331,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>DATE OF BIRTH</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{demographics?.dob}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{demographics?.date_of_birth}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>EDUCATIONAL HISTORY</Typography>

@@ -20,7 +20,7 @@ export interface PatientDemographics {
   age: number;
   sex: 'Male' | 'Female' | 'Other';
   mrn: string;
-  dob: string;
+  date_of_birth: string;
   phone: string;
   email: string;
   educationYears: number;

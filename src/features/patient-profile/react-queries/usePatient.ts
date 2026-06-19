@@ -37,7 +37,7 @@ const normalizeList = (value: unknown): string[] =>
  */
 const mapDemographics = (detail: PatientDetailOut): PatientDemographics => {
   const d = detail.demographics ?? {};
-  console.log('Mapping demographics with detail:', d);
+  console.log('Mapping demographics with detail:', d, detail);
   return {
     id: detail.patient.id,
     // name: prefer sub-object, fall back to root
@@ -46,7 +46,7 @@ const mapDemographics = (detail: PatientDetailOut): PatientDemographics => {
     age: Number(d.age ?? detail.patient.age ?? 0),
     sex: mapGender(d.sex ?? detail.patient.sex),
     mrn: d.mrn ?? detail.patient.mrn ?? '—',
-    dob: d.date_of_birth ?? d.dob ?? '—',
+    date_of_birth: detail.patient.date_of_birth ?? d.date_of_birth ?? '—',
     phone: d.phone ?? d.telephone ?? d.phone_encrypted ?? '—',
     email: d.email ?? d.secure_email ?? '—',
     educationYears: Number(d.education_years ?? d.educationYears ?? 0),

@@ -20,7 +20,7 @@ export const useCreatePatient = (
         Other: 'O',
       };
 
-      const dob = variables.demographics.dob
+      const dob = variables.demographics.date_of_birth
         ?? new Date(
             new Date().getFullYear() - variables.demographics.age,
             0,
