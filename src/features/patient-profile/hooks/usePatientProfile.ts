@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { predictionApiService, adaptPredictionOut } from '../../../services/apiClient';
 import type { AIAnalysisResult } from '../../../types';
+import { usePredict } from '../../prediction/react-queries/usePredict';
+import { adaptPredictionOut } from '@/src/clients/adapters';
 
 export function usePatientProfile() {
   const [activeTab, setActiveTab] = useState<'clinical' | 'imaging' | 'ai'>('clinical');
@@ -10,6 +11,8 @@ export function usePatientProfile() {
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [predictedAiAnalysis, setPredictedAiAnalysis] = useState<AIAnalysisResult | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const { mutate: predictMutation}= usePredict();
+  
 
   const uploadMriAndPredict = async ({
     patientId,
@@ -29,27 +32,26 @@ export function usePatientProfile() {
     setMriUploading(true);
     setUploadError(null);
     console.log(patientId, file, age, mmse, cdr, cdrtot);
-    try {
-      const response = await predictionApiService.predict({
+      setUploadedFile(file.name);
+      setActiveTab('ai');
+
+      predictMutation({
         patient_id: patientId,
         mri_file: file,
         age,
         mmse,
         cdr,
         cdrtot,
+      }, {
+        onSuccess: (response) => {
+          console.log('Prediction response:', response);
+          setPredictedAiAnalysis(adaptPredictionOut(response));
+        },
+        onError: (error) => {
+          const message = error instanceof Error ? error.message : 'Erro ao processar MRI';
+          setUploadError(message);
+        },
       });
-
-      setUploadedFile(file.name);
-      setPredictedAiAnalysis(adaptPredictionOut(response));
-      setActiveTab('ai');
-      return response;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Erro ao processar MRI';
-      setUploadError(message);
-      throw error;
-    } finally {
-      setMriUploading(false);
-    }
   };
 
   return {
