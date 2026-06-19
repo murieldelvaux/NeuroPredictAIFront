@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getPatients } from '../requests/getPatients';
-import { adaptPatientOut } from '../requests/adaptPatientOut';
+import { adaptPatientOut } from '../../patients/requests/adaptPatientOut';
 
 export const getPatientsQueryKey = 'getPatients';
 

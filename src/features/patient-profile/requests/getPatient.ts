@@ -1,5 +1,5 @@
-import { neuroPredictServiceFetch } from '../../../clients/neuroPredictServiceFetch';
-import type { PatientDetailResponse } from '../../../types';
+import { neuroPredictServiceFetch } from '@/clients/neuroPredictServiceFetch';
+import type { PatientDetailOut } from '@/types/api';
 
-export const getPatient = async (id: string): Promise<PatientDetailResponse> =>
-  neuroPredictServiceFetch<PatientDetailResponse>(`/patients/${id}`, { method: 'GET' });
+export const getPatient = (id: string): Promise<PatientDetailOut> =>
+  neuroPredictServiceFetch<PatientDetailOut>(`/patients/${id}`);
