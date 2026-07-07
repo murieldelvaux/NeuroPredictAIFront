@@ -1,11 +1,11 @@
-import type { PatientDemographics, ClinicalHistory } from '../../../types';
+import type { PatientDemographics, ClinicalHistory, ClinicalDataPayload, ImagingExam } from '../../../types';
 
 export interface ClinicalWorkflowProps {
   onSave: (data: {
     demographics: Omit<PatientDemographics, 'id'>;
     history: ClinicalHistory;
-    cognitive: { mmse: number; moca: number; cdr: number };
-    imaging?: { scanType: string; scanDate: string; radiologistNotes: string; fileUploaded?: string };
+    cognitive: ClinicalDataPayload;
+    imaging?: Pick<ImagingExam, 'scanType' | 'scanDate' | 'radiologistNotes'> & { fileUploaded?: string };
   }) => void;
   isSaving: boolean;
   onCancel: () => void;

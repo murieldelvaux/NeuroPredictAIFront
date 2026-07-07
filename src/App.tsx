@@ -66,7 +66,7 @@ function WorkspaceRoot({
       },
       onError: (err: any) => {
         setToastMessage({
-          text: `Calibration error during acquisition: ${err.message}`,
+          text: `Erro de calibração durante a aquisição: ${err.message}`,
           type: 'error',
         });
         setTimeout(() => setToastMessage(null), 5000);
@@ -116,7 +116,7 @@ function WorkspaceRoot({
             onSave={handleCreatePatientSubmit}
             isSaving={createPatientMutation.isPending}
             onCancel={() => {
-              setToastMessage({ text: 'Interim clinical registration file scrapped.', type: 'info' });
+              setToastMessage({ text: 'Arquivo provisório de registro clínico descartado.', type: 'info' });
               setTimeout(() => setToastMessage(null), 3000);
               setActiveView('dashboard');
             }}
@@ -138,14 +138,14 @@ function WorkspaceRoot({
                 }}
               >
                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                  Please select an active patient from the workspace queue first.
+                  Selecione um paciente ativo na fila da área de trabalho primeiro.
                 </Typography>
                 <Button
                   variant="contained"
                   onClick={() => setActiveView('dashboard')}
                   sx={{ mt: 2, fontSize: '11px', fontWeight: 'bold' }}
                 >
-                  Return to Dashboard
+                  Voltar ao painel
                 </Button>
               </Box>
             ) : detailLoading ? (
@@ -164,7 +164,7 @@ function WorkspaceRoot({
                   variant="caption"
                   sx={{ fontFamily: 'monospace', color: 'text.secondary', fontWeight: 'bold' }}
                 >
-                  Recalculating feature importance gradients...
+                  Recalculando gradientes de importância das variáveis...
                 </Typography>
               </Box>
             ) : activeDetail ? (
@@ -184,14 +184,14 @@ function WorkspaceRoot({
                 }}
               >
                 <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                  Patient data could not be loaded. Please try again.
+                  Os dados do paciente não puderam ser carregados. Tente novamente.
                 </Typography>
                 <Button
                   variant="contained"
                   onClick={() => setActiveView('dashboard')}
                   sx={{ mt: 2, fontSize: '11px', fontWeight: 'bold' }}
                 >
-                  Return to Dashboard
+                  Voltar ao painel
                 </Button>
               </Box>
             )}

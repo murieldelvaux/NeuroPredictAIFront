@@ -1,5 +1,30 @@
-import type { PatientOut } from '@/types/api';
-import type { Patient } from '@/src/types';
+import type { Patient, PatientSex, PatientStatus } from '@/src/types';
+
+type PatientOut = {
+  id: string;
+  name: string;
+  age: number;
+  sex?: string | null;
+  mrn?: string | null;
+  risk_score?: number | null;
+  risk_category?: string | null;
+  last_evaluated?: string | null;
+  status?: string | null;
+};
+
+const normalizeSex = (raw?: string | null): PatientSex => {
+  if (raw === 'M' || raw === 'F') return raw;
+  if (raw === 'Male') return 'M';
+  if (raw === 'Female') return 'F';
+  return 'M';
+};
+
+const normalizeStatus = (raw?: string | null): PatientStatus => {
+  const value = String(raw ?? 'Pending Interpretation').toLowerCase();
+  if (value.includes('complete')) return 'Completed';
+  if (value.includes('awaiting')) return 'Awaiting MRI';
+  return 'Pending Interpretation';
+};
 
 export function adaptPatientOut(p: PatientOut): Patient {
   const score = p.risk_score ?? 0;
@@ -18,18 +43,15 @@ export function adaptPatientOut(p: PatientOut): Patient {
         ? 'Moderate'
         : 'Low';
 
-  const sex =
-    p.sex === 'Male' || p.sex === 'Female' || p.sex === 'Other' ? p.sex : 'Other';
-
   return {
     id: p.id,
     name: p.name,
     age: p.age,
-    sex,
+    sex: normalizeSex(p.sex),
     mrn: p.mrn ?? '—',
     riskScore: Math.round(score * 100),
     riskCategory: category,
     lastEvaluated: p.last_evaluated ?? '—',
-    status: p.status ?? 'Pending Interpretation',
+    status: normalizeStatus(p.status),
   };
 }

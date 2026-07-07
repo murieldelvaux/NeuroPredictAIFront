@@ -14,7 +14,10 @@ export function useClinicalWorkflow() {
 
   const goToStep = (step: number) => {
     if (step >= 1 && step <= TOTAL_STEPS) {
-      setSession((prev) => ({ ...prev, currentStep: step }));
+      setSession((prev) => ({
+        ...prev,
+        currentStep: step as MedicalWorkflowSession['currentStep'],
+      }));
     }
   };
 

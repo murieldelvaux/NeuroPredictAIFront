@@ -55,10 +55,10 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
     setLastName,
     age,
     setAge,
-    gender,
-    setGender,
-    dob,
-    setDob,
+    sex,
+    setSex,
+    date_of_birth,
+    setDateOfBirth,
     mrn,
     educationYears,
     setEducationYears,
@@ -99,12 +99,12 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
 
   // Labels & Icons for stepper
   const stepsMetadata = [
-    { label: 'Patient Demographics' },
-    { label: 'Clinical History' },
-    { label: 'Cognitive Assessments' },
-    { label: 'Neuroimaging Metadata' },
-    { label: 'AI Processor Request' },
-    { label: 'Confirm Results' }
+    { label: 'Dados demográficos' },
+    { label: 'Histórico clínico' },
+    { label: 'Avaliações cognitivas' },
+    { label: 'Metadados de neuroimagem' },
+    { label: 'Solicitação de IA' },
+    { label: 'Confirmar resultados' }
   ];
 
   return (
@@ -122,8 +122,8 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
         id="workflow-header-panel"
       >
         <Box>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Active Patient Acquisition Intake</Typography>
-          <Typography variant="caption" sx={{ display: 'block' }} color="text.secondary">Guided multimodality data ingestion matching HIPAA rules.</Typography>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>Entrada ativa de aquisição do paciente</Typography>
+          <Typography variant="caption" sx={{ display: 'block' }} color="text.secondary">Fluxo guiado de ingestão multimodal em conformidade com as regras de privacidade.</Typography>
         </Box>
         <Button 
           variant="outlined" 
@@ -133,7 +133,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
           id="btn-cancel-acquisition"
           sx={{ fontSize: '11px', textTransform: 'none', fontWeight: 'bold', borderColor: 'divider' }}
         >
-          Abandon Evaluation
+          Abandonar avaliação
         </Button>
       </Box>
 
@@ -165,14 +165,14 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-one">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
             <DemographicIcon sx={{ color: 'primary.main' }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 1: Patient Demographic Variables</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Etapa 1: Variáveis demográficas do paciente</Typography>
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }} id="demographics-form-fields">
             <TextField 
               required
               id="input-first-name" 
-              label="FIRST NAME" 
+              label="PRIMEIRO NOME" 
               variant="outlined" 
               fullWidth 
               size="small"
@@ -184,7 +184,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             <TextField 
               required
               id="input-last-name" 
-              label="LAST NAME" 
+              label="SOBRENOME" 
               variant="outlined" 
               fullWidth 
               size="small"
@@ -195,7 +195,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             />
             <TextField 
               id="input-age" 
-              label="AGE (YEARS)" 
+              label="IDADE (ANOS)" 
               type="number" 
               variant="outlined" 
               fullWidth 
@@ -205,33 +205,33 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
               slotProps={{ inputLabel: { shrink: true } }}
             />
             <FormControl fullWidth size="small">
-              <InputLabel id="select-gender-label">BIOLOGICAL GENDER</InputLabel>
+              <InputLabel id="select-gender-label">SEXO BIOLÓGICO</InputLabel>
               <Select
                 labelId="select-gender-label"
                 id="select-gender"
-                value={gender}
-                label="BIOLOGICAL GENDER"
-                onChange={(e: any) => setGender(e.target.value)}
+                value={sex}
+                label="SEXO BIOLÓGICO"
+                onChange={(e: any) => setSex(e.target.value)}
               >
-                <MenuItem value="Male">Male</MenuItem>
-                <MenuItem value="Female">Female</MenuItem>
-                <MenuItem value="Other">Other</MenuItem>
+                <MenuItem value="Male">Masculino</MenuItem>
+                <MenuItem value="Female">Feminino</MenuItem>
+                <MenuItem value="Other">Outro</MenuItem>
               </Select>
             </FormControl>
             <TextField 
               id="input-dob" 
-              label="DATE OF BIRTH" 
+              label="DATA DE NASCIMENTO" 
               type="date" 
               variant="outlined" 
               fullWidth 
               size="small"
-              value={dob} 
-              onChange={(e) => setDob(e.target.value)}
+              value={date_of_birth} 
+              onChange={(e) => setDateOfBirth(e.target.value)}
               slotProps={{ inputLabel: { shrink: true } }}
             />
             <TextField 
               id="input-education" 
-              label="FORMAL EDUCATION YEARS" 
+              label="ANOS DE ESTUDO" 
               type="number" 
               variant="outlined" 
               fullWidth 
@@ -249,7 +249,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-two">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
             <SymptomsIcon sx={{ color: 'primary.main' }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 2: Medical Symptoms & Risk Profilers</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Etapa 2: Sintomas médicos e fatores de risco</Typography>
           </Box>
 
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }} id="clinical-history-form">
@@ -300,7 +300,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3.5 }} id="history-checkbox-grid">
               <Paper variant="outlined" sx={{ p: 2, bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }} id="card-genetic-selections">
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: '800', mb: 1.5 }}>
-                  APOE BIOMARKER & GENETIC CHARACTERISTICS
+                  MARCADORES APOE E CARACTERÍSTICAS GENÉTICAS
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   {[
@@ -320,7 +320,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
 
               <Paper variant="outlined" sx={{ p: 2, bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }} id="card-comorbidities-selections">
                 <Typography variant="body2" color="text.secondary" sx={{ fontWeight: '800', mb: 1.5 }}>
-                  GLOBAL COMORBIDITIES
+                  COMORBIDADES GLOBAIS
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
                   {[
@@ -342,7 +342,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             {/* Prescribed Medications tag list */}
             <Box id="wrapper-medications-input-block">
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', mb: 1, display: 'block' }}>
-                PRESCRIBED MEDICATIONS
+                MEDICAMENTOS PRESCRITOS
               </Typography>
               <Box sx={{ display: 'flex', gap: 1.5 }}>
                 <TextField 
@@ -390,7 +390,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-three">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
             <AssessmentIcon sx={{ color: 'primary.main' }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 3: Quantitative Cognitive Assessments</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Etapa 3: Avaliações cognitivas quantitativas</Typography>
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 3.5 }} id="cognitive-scales-fields">
@@ -398,8 +398,8 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             <Card variant="outlined" id="input-range-mmse">
               <CardContent sx={{ p: 2.5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>MMSE SCORE</Typography>
-                  <Chip label="Scale: 0-30" size="small" variant="filled" sx={{ height: 18, fontSize: '9px', fontWeight: 'bold' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>PONTUAÇÃO MMSE</Typography>
+                  <Chip label="Escala: 0-30" size="small" variant="filled" sx={{ height: 18, fontSize: '9px', fontWeight: 'bold' }} />
                 </Box>
                 <TextField 
                   type="number" 
@@ -420,8 +420,8 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             <Card variant="outlined" id="input-range-moca">
               <CardContent sx={{ p: 2.5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>MOCA SCORE</Typography>
-                  <Chip label="Scale: 0-30" size="small" variant="filled" sx={{ height: 18, fontSize: '9px', fontWeight: 'bold' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>PONTUAÇÃO MOCA</Typography>
+                  <Chip label="Escala: 0-30" size="small" variant="filled" sx={{ height: 18, fontSize: '9px', fontWeight: 'bold' }} />
                 </Box>
                 <TextField 
                   type="number" 
@@ -442,8 +442,8 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             <Card variant="outlined" id="input-range-cdr">
               <CardContent sx={{ p: 2.5 }}>
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>CDR SCORE INDEX</Typography>
-                  <Chip label="Scale: 0-3" size="small" variant="filled" sx={{ height: 18, fontSize: '9px', fontWeight: 'bold' }} />
+                  <Typography variant="caption" sx={{ fontWeight: 'bold' }}>ÍNDICE CDR</Typography>
+                  <Chip label="Escala: 0-3" size="small" variant="filled" sx={{ height: 18, fontSize: '9px', fontWeight: 'bold' }} />
                 </Box>
                 <FormControl fullWidth size="small">
                   <Select
@@ -452,10 +452,10 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
                     onChange={(e: any) => setCdrScore(parseFloat(e.target.value))}
                   >
                     <MenuItem value="0">0.0 (Normal)</MenuItem>
-                    <MenuItem value="0.5">0.5 (Very Mild / Prodromal)</MenuItem>
-                    <MenuItem value="1">1.0 (Mild Dementia)</MenuItem>
-                    <MenuItem value="2">2.0 (Moderate Dementia)</MenuItem>
-                    <MenuItem value="3">3.0 (Severe Dementia)</MenuItem>
+                    <MenuItem value="0.5">0.5 (Muito leve / Prodrômico)</MenuItem>
+                    <MenuItem value="1">1.0 (Demência leve)</MenuItem>
+                    <MenuItem value="2">2.0 (Demência moderada)</MenuItem>
+                    <MenuItem value="3">3.0 (Demência grave)</MenuItem>
                   </Select>
                 </FormControl>
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, lineHeight: 1.4 }}>
@@ -472,18 +472,18 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-four">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
             <BrainIcon sx={{ color: 'primary.main' }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 4: Neuroimaging Modality & Radiologist Records</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Etapa 4: Modalidade de neuroimagem e registros do radiologista</Typography>
           </Box>
 
           <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 3 }} id="mri-details-formfields">
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 3 }}>
               <FormControl fullWidth size="small">
-                <InputLabel id="select-scan-type-label">IMAGE METRICS TYPE</InputLabel>
+                <InputLabel id="select-scan-type-label">TIPO DE MÉTRICA DE IMAGEM</InputLabel>
                 <Select
                   labelId="select-scan-type-label"
                   id="select-scan-type"
                   value={scanType}
-                  label="IMAGE METRICS TYPE"
+                  label="TIPO DE MÉTRICA DE IMAGEM"
                   onChange={(e: any) => setScanType(e.target.value)}
                 >
                   <MenuItem value="MRI 3T">MRI 3.0 Tesla Structural Scan</MenuItem>
@@ -494,7 +494,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
 
               <TextField 
                 id="imaging-scan-date" 
-                label="SCAN ACQUISITION DATE" 
+                label="DATA DE AQUISIÇÃO DO SCAN" 
                 type="date" 
                 variant="outlined" 
                 fullWidth 
@@ -507,7 +507,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
 
             <TextField 
               id="textarea-radiologist-notes" 
-              label="RADIOLOGIST FINDINGS & CLINICAL NOTES" 
+              label="ACHADOS DO RADIOLOGISTA E OBSERVAÇÕES CLÍNICAS" 
               variant="outlined" 
               fullWidth 
               multiline
@@ -549,10 +549,10 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
                 }}
               />
               <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                {customFileUploaded ? `✓ Attached File: ${customFileUploaded}` : "Browse MRI Voxel Datasets (Optional)"}
+                {customFileUploaded ? `✓ Arquivo anexado: ${customFileUploaded}` : "Buscar conjuntos de voxels de ressonância (opcional)"}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
-                Accepts DICOM folders, NIfTI structural formats (.nii.gz)
+                Aceita pastas DICOM e formatos estruturais NIfTI (.nii.gz)
               </Typography>
             </Box>
           </Box>
@@ -564,19 +564,19 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-five">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
             <ProcessorIcon sx={{ color: 'primary.main' }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 5: Explainable AI Pipeline Trigger</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Etapa 5: Gatilho do pipeline de IA explicável</Typography>
           </Box>
 
           <Paper variant="outlined" sx={{ p: 4, textAlign: 'center', bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }} id="ai-processor-action-zone">
             {simulationRunning ? (
               <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2.5, maxWidth: 360, mx: 'auto' }} id="processor-running-block">
                 <CircularProgress color="primary" />
-                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Processing voxel layers & clinical weights...</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 'bold' }}>Processando camadas de voxels e pesos clínicos...</Typography>
                 
                 <Box sx={{ width: '100%' }}>
                   <LinearProgress variant="determinate" value={simulationPercentage} sx={{ height: 6, borderRadius: 2 }} />
                   <Typography variant="caption" sx={{ fontFamily: 'monospace', display: 'block', mt: 1, fontWeight: 'bold' }}>
-                    {simulationPercentage}% Compiled
+                    {simulationPercentage}% compilado
                   </Typography>
                 </Box>
               </Box>
@@ -585,9 +585,9 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
                 <Box sx={{ p: 1.5, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: '50%', display: 'flex' }}>
                   <ProcessorIcon fontSize="large" />
                 </Box>
-                <Typography variant="subtitle1" sx={{ fontWeight: 'extrabold' }}>Request Alzheimer's Prognostic Alignment</Typography>
+                <Typography variant="subtitle1" sx={{ fontWeight: 'extrabold' }}>Solicitar alinhamento prognóstico para Alzheimer</Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 500, mx: 'auto' }}>
-                  By clicking below, you submit this multimodality intake file comprising demographics, clinical records, and voxel configurations to central PyTorch predictors. This outputs SHAP factors.
+                  Ao clicar abaixo, você envia este arquivo multimodal com dados demográficos, registros clínicos e configurações de voxels para os preditores centrais em PyTorch. Isso gera fatores SHAP.
                 </Typography>
                 <Button 
                   variant="contained" 
@@ -596,7 +596,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
                   id="btn-run-diagnostic-pipeline"
                   sx={{ mt: 1 }}
                 >
-                  Confirm and Run Diagnostic Core (PyTorch + MONAI)
+                  Confirmar e executar núcleo diagnóstico (PyTorch + MONAI)
                 </Button>
               </Box>
             )}
@@ -639,20 +639,20 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-six">
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, borderBottom: 1, borderColor: 'divider', pb: 1 }}>
             <CheckIcon sx={{ color: 'success.main' }} />
-            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Step 6: Confirm Results & Commit Demographics</Typography>
+            <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Etapa 6: Confirmar resultados e registrar dados demográficos</Typography>
           </Box>
 
           <Paper variant="outlined" sx={{ p: 4, bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }} id="results-review-dashboard">
             <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1.1fr' }, gap: 3 }} id="review-metrics-split">
               <Box>
                 <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'text.secondary' }}>
-                  SUBJECT DEMOGRAPHICS
+                  DADOS DEMOGRÁFICOS DO PACIENTE
                 </Typography>
                 <Typography variant="subtitle1" sx={{ fontWeight: '900', mt: 1 }}>
                   {firstName} {lastName}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Born {dob} ({age} years old selection) • {gender}
+                  Nascido em {date_of_birth} ({age} anos) • {sex}
                 </Typography>
                 <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontWeight: 'bold', display: 'block', mt: 0.5 }}>
                   {mrn}
@@ -661,7 +661,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
 
               <Box>
                 <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'text.secondary' }}>
-                  COGNITIVE INDEX
+                  ÍNDICE COGNITIVO
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 3, mt: 1 }} id="review-cognitive-values">
                   <Box>
@@ -683,16 +683,16 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             {/* Notification summary card */}
             <Box sx={{ borderTop: 1, borderColor: 'divider', pt: 3, mt: 3 }} id="review-risk-projection-card">
               <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'text.secondary', display: 'block', mb: 1.5 }}>
-                SIMULATED CLINICAL REPORT INSIGHT
+                VISÃO RESUMIDA DO RELATÓRIO CLÍNICO SIMULADO
               </Typography>
               <Paper variant="outlined" sx={{ p: 2, display: 'flex', gap: 2, borderColor: 'success.light', bgcolor: 'rgba(16, 185, 129, 0.05)' }}>
                 <GuardIcon sx={{ color: 'success.main', mt: 0.25 }} />
                 <Box>
                   <Typography variant="body2" sx={{ fontWeight: '950', color: theme.palette.mode === 'light' ? 'success.dark' : 'success.light' }}>
-                    Pipeline Execution Complete
+                    Execução do pipeline concluída
                   </Typography>
                   <Typography variant="caption" sx={{ display: 'block', mt: 0.5, lineHeight: 1.4, color: 'text.primary' }}>
-                    This profile compiles correctly following all department criteria. Retrospective analysis can be re-run at any time. Click Save File to commit to central registrar databases.
+                    Este perfil foi compilado corretamente seguindo todos os critérios do departamento. A análise retrospectiva pode ser reexecutada a qualquer momento. Clique em Salvar para registrar nos bancos centrais.
                   </Typography>
                 </Box>
               </Paper>
@@ -722,7 +722,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             id="btn-step-prev"
             sx={{ fontWeight: 'bold', borderColor: 'divider' }}
           >
-            Previous Step
+            Etapa anterior
           </Button>
         ) : <Box />}
 
@@ -735,7 +735,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             id="btn-step-next"
             sx={{ fontWeight: 'bold' }}
           >
-            Next Segment
+            Próxima etapa
           </Button>
         ) : step === 6 ? (
           <Button 
@@ -746,7 +746,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
             id="btn-save-evaluation"
             sx={{ fontWeight: 'black', color: '#ffffff' }}
           >
-            {isSaving ? "Syncing Workspace..." : "Commit and Save Patient"}
+            {isSaving ? "Sincronizando workspace..." : "Salvar e registrar paciente"}
           </Button>
         ) : <Box />}
       </Box>

@@ -75,10 +75,10 @@ export default function DoctorDashboard({
       >
         <Box>
           <Typography variant="h6" sx={{ fontWeight: 'bold', letterSpacing: '-0.025em' }} color="text.primary" id="dashboard-main-heading">
-            Clinical Diagnostic Queue
+            Fila de diagnóstico clínico
           </Typography>
           <Typography variant="caption" sx={{ display: 'block' }} color="text.secondary" id="dashboard-sub-heading">
-            Alzheimer's disease prognostic forecasting & explainable clinical indicators.
+            Previsão prognóstica da doença de Alzheimer e indicadores clínicos explicáveis.
           </Typography>
         </Box>
         <Button
@@ -90,7 +90,7 @@ export default function DoctorDashboard({
           id="btn-trigger-new-evaluation"
           sx={{ fontWeight: 'bold' }}
         >
-          New Acquisition Workflow
+          Novo fluxo de aquisição
         </Button>
       </Box>
 
@@ -100,12 +100,12 @@ export default function DoctorDashboard({
           <Card>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Clinical Registry</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Registro clínico</Typography>
                 <Box sx={{ p: 0.8, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: 1.5, display: 'flex' }}><ActivityIcon fontSize="small" /></Box>
               </Box>
               <Box sx={{ mt: 1.5 }}>
                 <Typography variant="h4" sx={{ fontWeight: '900' }}>{isLoading ? <CircularProgress size={20} thickness={5} /> : total}</Typography>
-                <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold', mt: 0.5, display: 'block' }}>Active Patient Profiles</Typography>
+                <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold', mt: 0.5, display: 'block' }}>Perfis ativos de pacientes</Typography>
               </Box>
             </CardContent>
           </Card>
@@ -115,12 +115,12 @@ export default function DoctorDashboard({
           <Card>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Critical Priority</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Prioridade crítica</Typography>
                 <Box sx={{ p: 0.8, bgcolor: 'error.main', color: '#ffffff', borderRadius: 1.5, display: 'flex' }}><AlertIcon fontSize="small" /></Box>
               </Box>
               <Box sx={{ mt: 1.5 }}>
                 <Typography variant="h4" sx={{ fontWeight: '900', color: 'error.main' }}>{isLoading ? <CircularProgress size={20} /> : highRisk}</Typography>
-                <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold', display: 'block' }}>Patients with High Atrophy Risk</Typography>
+                <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold', display: 'block' }}>Pacientes com alto risco de atrofia</Typography>
               </Box>
             </CardContent>
           </Card>
@@ -130,12 +130,12 @@ export default function DoctorDashboard({
           <Card>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Avg Prognosis Factor</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Fator médio de prognóstico</Typography>
                 <Box sx={{ p: 0.8, bgcolor: 'warning.light', color: 'warning.contrastText', borderRadius: 1.5, display: 'flex' }}><CircuitIcon fontSize="small" /></Box>
               </Box>
               <Box sx={{ mt: 1.5 }}>
                 <Typography variant="h4" sx={{ fontWeight: '900' }}>{isLoading ? <CircularProgress size={20} /> : `${avgRisk}%`}</Typography>
-                <Typography variant="caption" sx={{ display: 'block' }} color="text.secondary">Composite diagnostic confidence</Typography>
+                <Typography variant="caption" sx={{ display: 'block' }} color="text.secondary">Confiança diagnóstica composta</Typography>
               </Box>
             </CardContent>
           </Card>
@@ -145,12 +145,12 @@ export default function DoctorDashboard({
           <Card>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Imaging Pipeline</Typography>
+                <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Pipeline de imagem</Typography>
                 <Box sx={{ p: 0.8, bgcolor: 'info.main', color: '#ffffff', borderRadius: 1.5, display: 'flex' }}><BrainIcon fontSize="small" /></Box>
               </Box>
               <Box sx={{ mt: 1.5 }}>
                 <Typography variant="h4" sx={{ fontWeight: '900' }}>{isLoading ? <CircularProgress size={20} /> : awaitingMRI}</Typography>
-                <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 'bold', display: 'block' }}>Awaiting standard 3T MRI upload</Typography>
+                <Typography variant="caption" sx={{ color: 'info.main', fontWeight: 'bold', display: 'block' }}>Aguardando envio de ressonância 3T padrão</Typography>
               </Box>
             </CardContent>
           </Card>
@@ -176,7 +176,7 @@ export default function DoctorDashboard({
             id="patients-search-input"
             variant="outlined"
             size="small"
-            placeholder="Search by Patient name, MRN, or Ref..."
+            placeholder="Buscar por nome, MRN ou referência..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             sx={{ maxWidth: 450, width: '100%', bgcolor: 'background.paper' }}
@@ -199,13 +199,13 @@ export default function DoctorDashboard({
                     color: riskFilter === v ? '#ffffff' : 'text.primary'
                   }}
                 >
-                  {v === 'ALL' ? 'All Risks' : `${v} Risk`}
+                  {v === 'ALL' ? 'Todos os riscos' : `${v === 'High' ? 'Alto' : v === 'Moderate' ? 'Moderado' : 'Baixo'} risco`}
                 </Button>
               ))}
             </ButtonGroup>
             <ButtonGroup size="small" variant="outlined" color="inherit" id="filter-wrapper-status" sx={{ bgcolor: 'background.paper' }}>
-              <Button onClick={() => setStatusFilter('ALL')} sx={{ fontSize: '10px', fontWeight: 'bold', bgcolor: statusFilter === 'ALL' ? 'action.active' : 'transparent', color: statusFilter === 'ALL' ? 'background.paper' : 'text.primary' }}>All Statuses</Button>
-              <Button onClick={() => setStatusFilter('Pending Interpretation')} sx={{ fontSize: '10px', fontWeight: 'bold', bgcolor: statusFilter === 'Pending Interpretation' ? 'primary.main' : 'transparent', color: statusFilter === 'Pending Interpretation' ? '#ffffff' : 'text.primary' }}>Pending AI</Button>
+              <Button onClick={() => setStatusFilter('ALL')} sx={{ fontSize: '10px', fontWeight: 'bold', bgcolor: statusFilter === 'ALL' ? 'action.active' : 'transparent', color: statusFilter === 'ALL' ? 'background.paper' : 'text.primary' }}>Todos os status</Button>
+              <Button onClick={() => setStatusFilter('Pending Interpretation')} sx={{ fontSize: '10px', fontWeight: 'bold', bgcolor: statusFilter === 'Pending Interpretation' ? 'primary.main' : 'transparent', color: statusFilter === 'Pending Interpretation' ? '#ffffff' : 'text.primary' }}>Pendente de IA</Button>
             </ButtonGroup>
           </Box>
         </Box>
@@ -214,18 +214,18 @@ export default function DoctorDashboard({
           {isLoading ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', py: 8, alignItems: 'center', justifyContent: 'center', gap: 1 }}>
               <CircularProgress size={32} />
-              <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>Syncing securely with central databases...</Typography>
+              <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary' }}>Sincronizando com os bancos centrais...</Typography>
             </Box>
           ) : filteredPatients.length === 0 ? (
             <Box sx={{ py: 8, textAlign: 'center' }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>No clinical files match the active filtration query.</Typography>
-              <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }} color="text.secondary">Adjust search parameters or initiate a new diagnostic flow.</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Nenhum arquivo clínico corresponde à pesquisa atual.</Typography>
+              <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }} color="text.secondary">Ajuste os filtros ou inicie um novo fluxo diagnóstico.</Typography>
             </Box>
           ) : (
             <Table size="small" id="queue-patients-table">
               <TableHead>
                 <TableRow sx={{ bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }}>
-                  {['ID & MRN', 'Patient Name', 'Age / Sex', 'Last Evaluation', 'Prognosis Risk Factor', 'Service Status', 'Operation'].map((h, i) => (
+                  {['ID e MRN', 'Nome do paciente', 'Idade / sexo', 'Última avaliação', 'Fator de risco prognóstico', 'Status do serviço', 'Operação'].map((h, i) => (
                     <TableCell key={h} sx={{ py: 1.5 }} align={i >= 4 ? (i === 6 ? 'right' : 'center') : 'left'}>
                       <Typography variant="caption" sx={{ fontWeight: 'bold' }}>{h}</Typography>
                     </TableCell>
@@ -247,7 +247,7 @@ export default function DoctorDashboard({
                       <TableCell sx={{ py: 1.5 }}>
                         <Typography variant="body2" onClick={() => onSelectPatient(p.id)} sx={{ fontWeight: 'bold', cursor: 'pointer', '&:hover': { color: 'primary.main' } }}>{p.name}</Typography>
                       </TableCell>
-                      <TableCell sx={{ py: 1.5 }}><Typography variant="body2" color="text.secondary">{p.age} y/o • {p.sex}</Typography></TableCell>
+                      <TableCell sx={{ py: 1.5 }}><Typography variant="body2" color="text.secondary">{p.age} anos • {p.sex}</Typography></TableCell>
                       <TableCell sx={{ py: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                           <CalendarIcon sx={{ fontSize: 13 }} />
@@ -257,7 +257,7 @@ export default function DoctorDashboard({
                       <TableCell sx={{ py: 1.5 }} align="center"><Chip label={riskConfig.label} color={riskConfig.color} size="small" variant="outlined" sx={{ fontWeight: 'bold', fontSize: '10px', height: 20 }} /></TableCell>
                       <TableCell sx={{ py: 1.5 }} align="center"><Chip label={p.status} color={statusColor} size="small" sx={{ fontWeight: 'bold', fontSize: '9px', height: 18 }} /></TableCell>
                       <TableCell sx={{ py: 1.5 }} align="right">
-                        <Button variant="outlined" size="small" onClick={() => onSelectPatient(p.id)} endIcon={<ArrowRightIcon fontSize="inherit" />} id={`btn-review-file-${p.id}`} sx={{ fontSize: '10px', py: 0.25, px: 1, fontWeight: 'bold', color: 'text.secondary', borderColor: 'divider', '&:hover': { bgcolor: 'primary.main', color: '#ffffff', borderColor: 'primary.main' } }}>Review File</Button>
+                        <Button variant="outlined" size="small" onClick={() => onSelectPatient(p.id)} endIcon={<ArrowRightIcon fontSize="inherit" />} id={`btn-review-file-${p.id}`} sx={{ fontSize: '10px', py: 0.25, px: 1, fontWeight: 'bold', color: 'text.secondary', borderColor: 'divider', '&:hover': { bgcolor: 'primary.main', color: '#ffffff', borderColor: 'primary.main' } }}>Ver prontuário</Button>
                       </TableCell>
                     </TableRow>
                   );

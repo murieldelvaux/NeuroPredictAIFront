@@ -101,7 +101,7 @@ export default function Layout({
                   textTransform: 'none'
                 }}
               >
-                Patients Queue
+                Fila de pacientes
               </Button>
               <Button 
                 variant={activeView === 'workflow' ? 'contained' : 'text'}
@@ -116,7 +116,7 @@ export default function Layout({
                   textTransform: 'none'
                 }}
               >
-                Clinical Pipeline Wizard
+                Assistente de fluxo clínico
               </Button>
               <Button 
                 variant={activeView === 'profile' ? 'contained' : 'text'}
@@ -131,7 +131,7 @@ export default function Layout({
                   textTransform: 'none'
                 }}
               >
-                Patient Analysis
+                Análise do paciente
               </Button>
             </Box>
             
@@ -152,10 +152,10 @@ export default function Layout({
             <Box sx={{ display: { xs: 'none', sm: 'flex' }, alignItems: 'center', gap: 1.5 }} id="clinician-badge">
               <Box sx={{ textAlign: 'right' }}>
                 <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', lineHeight: 1 }}>
-                  Dr. Sarah Mitchell
+                  Dra. Sarah Mitchell
                 </Typography>
                 <Typography variant="caption" sx={{ color: 'text.secondary', fontSize: '9px' }}>
-                  Senior Neurologist
+                  Neurologista sênior
                 </Typography>
               </Box>
               <Avatar 
@@ -192,20 +192,20 @@ export default function Layout({
         id="sub-header-workflow-banner"
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="caption" sx={{ opacity: 0.6 }}>Active Patient:</Typography>
+          <Typography variant="caption" sx={{ opacity: 0.6 }}>Paciente ativo:</Typography>
           <Typography 
             variant="caption" 
             sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'primary.light', textTransform: 'uppercase' }}
             id="selected-patient-badge-indicator"
           >
-            {selectedPatientName || 'NONE SELECTED - CHOOSE FROM QUEUE'}
+            {selectedPatientName || 'NENHUM SELECIONADO - ESCOLHA NA FILA'}
           </Typography>
         </Box>
         
         {/* Horizontal Pipeline Steps */}
         <Box sx={{ display: { xs: 'none', md: 'flex' }, alignItems: 'center', gap: 1 }} id="stepper-horizontal-gauge">
           <Chip 
-            label="1. Clinical Data" 
+            label="1. Dados clínicos" 
             size="small" 
             sx={{ 
               height: 20,
@@ -219,7 +219,7 @@ export default function Layout({
           />
           <Box sx={{ width: 12, height: '1px', bgcolor: 'rgba(255,255,255,0.1)' }} />
           <Chip 
-            label="2. Cognitive Profile" 
+            label="2. Perfil cognitivo" 
             size="small" 
             sx={{ 
               height: 20,
@@ -233,7 +233,7 @@ export default function Layout({
           />
           <Box sx={{ width: 12, height: '1px', bgcolor: 'rgba(255,255,255,0.1)' }} />
           <Chip 
-            label="3. Imaging Metrics" 
+            label="3. Métricas de imagem" 
             size="small" 
             sx={{ 
               height: 20,
@@ -247,7 +247,7 @@ export default function Layout({
           />
           <Box sx={{ width: 12, height: '1px', bgcolor: 'rgba(255,255,255,0.1)' }} />
           <Chip 
-            label="4. AI Predictor" 
+            label="4. Previsor de IA" 
             size="small" 
             sx={{ 
               height: 20,
@@ -262,7 +262,7 @@ export default function Layout({
         </Box>
         
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'inline' } }}>Pipeline Status:</Typography>
+          <Typography variant="caption" sx={{ color: 'text.secondary', display: { xs: 'none', sm: 'inline' } }}>Status do pipeline:</Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: 'emerald.main' }}>
             <Box 
               sx={{ 
@@ -274,7 +274,7 @@ export default function Layout({
               }} 
             />
             <Typography variant="caption" sx={{ fontWeight: 'bold', color: '#34d399', fontSize: '9px', tracking: '0.05em' }}>
-              MONAI & PYTORCH ACTIVE
+              MONAI E PYTORCH ATIVOS
             </Typography>
           </Box>
         </Box>
@@ -319,14 +319,14 @@ export default function Layout({
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8 }}>
             <Box sx={{ width: 6, height: 6, bgcolor: '#10b981', borderRadius: '50%' }} />
             <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 500, fontSize: '9px', textTransform: 'uppercase' }}>
-              System Online: GPU_NODE_01
+              Sistema online: GPU_NODE_01
             </Typography>
           </Box>
           <Divider orientation="vertical" variant="middle" flexItem sx={{ height: 12, my: 'auto' }} />
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
             <LatencyIcon sx={{ fontSize: 10 }} />
             <Typography variant="caption" sx={{ fontFamily: 'monospace', fontSize: '9px' }}>
-              API_LATENCY: 142ms
+              LATÊNCIA_API: 142ms
             </Typography>
           </Box>
           <Divider orientation="vertical" variant="middle" flexItem sx={{ height: 12, my: 'auto', display: { xs: 'none', sm: 'block' } }} />
@@ -338,7 +338,7 @@ export default function Layout({
           </Box>
         </Box>
         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', fontFamily: 'monospace', fontSize: '9px' }}>
-          NEUROPREDICT_AI CORE v2.4.0-STABLE
+          NÚCLEO NEUROPREDICT_AI v2.4.0-ESTÁVEL
         </Typography>
       </Paper>
     </Box>
