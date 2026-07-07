@@ -1,7 +1,7 @@
 import type { UseClinicalEvaluationVariables } from '../types/clinicalWorkflow.types';
 import { getPatient } from '../../patient-profile/requests/getPatient';
 import type { Patient } from '../../../types';
-import { adaptPatientOut } from '../../dashboard/utils/adaptPatientOut';
+import { adaptPatientOut } from '../../../lib/mappers/adaptPatientOut';
 
 /**
  * Writes cognitive evaluation updates to localStorage.
@@ -52,5 +52,17 @@ export const updateClinicalEvaluation = async (
     }
   }
 
-  return adaptPatientOut(detail);
+  const patientSummary = {
+    id: detail.patient.id,
+    name: detail.patient.name,
+    age: detail.patient.age,
+    sex: detail.patient.sex,
+    mrn: detail.demographics?.mrn as string | undefined,
+    risk_score: detail.patient.last_prediction?.risk_score ?? 0,
+    risk_category: detail.patient.last_prediction?.classification ?? '',
+    last_evaluated: detail.patient.created_at ?? '—',
+    status: 'Pending Interpretation',
+  };
+
+  return adaptPatientOut(patientSummary);
 };

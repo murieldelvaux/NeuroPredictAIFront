@@ -54,7 +54,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
 
   const displayName = demographics?.name ?? patient.name;
   const displayMrn = demographics?.mrn ?? patient.mrn;
-  const displayGender = demographics?.sex === 'F' ? 'Female' : demographics?.sex === 'M' ? 'Male' : patient.sex === 'F' ? 'Female' : patient.sex === 'M' ? 'Male' : 'Other';
+  const displayGender = demographics?.sex === 'F' ? 'Feminino' : demographics?.sex === 'M' ? 'Masculino' : patient.sex === 'F' ? 'Feminino' : patient.sex === 'M' ? 'Masculino' : 'Outro';
   const displayDob = demographics?.date_of_birth ?? '—';
   const displayAge = demographics?.age ?? patient.age;
   const displayEducation = cognitive?.educationYears ?? 0;
@@ -295,12 +295,12 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
           id="btn-back-to-queue"
           sx={{ fontWeight: 'bold', textTransform: 'none', borderColor: 'divider', color: 'text.secondary' }}
         >
-          Back to Cohort List
+          Voltar à lista da coorte
         </Button>
 
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Chip label="HIPAA COMPLIANT SECURE" size="small" variant="outlined" color="primary" sx={{ height: 20, fontSize: '9px', fontWeight: 'bold' }} />
-          <Chip label="GPU ACCELERATION ACTIVE" size="small" variant="outlined" color="success" sx={{ height: 20, fontSize: '9px', fontWeight: 'bold' }} />
+          <Chip label="SEGURANÇA HIPAA" size="small" variant="outlined" color="primary" sx={{ height: 20, fontSize: '9px', fontWeight: 'bold' }} />
+          <Chip label="ACELERAÇÃO POR GPU ATIVA" size="small" variant="outlined" color="success" sx={{ height: 20, fontSize: '9px', fontWeight: 'bold' }} />
         </Box>
       </Box>
 
@@ -334,27 +334,27 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
 
               <Box sx={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 2, fontSize: '12px' }} id="patient-metrics-demographic-list">
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>SEX / GENDER</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>SEXO</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayGender}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>AGE</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayAge} Years</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>IDADE</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayAge} anos</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>DATE OF BIRTH</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>DATA DE NASCIMENTO</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayDob}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>EDUCATIONAL HISTORY</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayEducation} Formal Academic Years</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>HISTÓRICO ESCOLAR</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayEducation} anos de estudo</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>TELEPHONE ENCRYPT</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>TELEFONE</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace' }}>{displayPhone}</Typography>
                 </Box>
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>SECURE SYSTEM EMAIL</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>E-MAIL DO SISTEMA</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{displayEmail}</Typography>
                 </Box>
               </Box>
@@ -365,13 +365,13 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
           <Card variant="outlined" id="summary-badge-history" sx={{ borderRadius: 2 }}>
             <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
               <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>
-                Clinical History & Symptoms
+                Histórico clínico e sintomas
               </Typography>
 
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }} id="clinical-history-bullet-panel">
                 {/* Presenting symptoms */}
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Active Presenting Symptoms</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Sintomas atuais</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="symptom-tag-chips-pile">
                     {history?.symptoms.map((s, idx) => (
                       <Chip key={idx} label={s} size="small" variant="filled" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
@@ -381,22 +381,22 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
 
                 {/* Hereditary family context */}
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Family Hereditary Dementia</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Histórico familiar de demência</Typography>
                   {history?.familyHistory?.dementiaCount && history.familyHistory.dementiaCount > 0 ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} id="family-relation-line">
                       <DnaIcon sx={{ fontSize: 13, color: 'primary.main' }} />
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        {history?.familyHistory?.dementiaCount} diagnosed relatives ({history?.familyHistory?.alzheimersRelation?.join(', ')})
+                        {history?.familyHistory?.dementiaCount} parentes diagnosticados ({history?.familyHistory?.alzheimersRelation?.join(', ')})
                       </Typography>
                     </Box>
                   ) : (
-                    <Typography variant="body2" color="text.secondary">No family history reported</Typography>
+                    <Typography variant="body2" color="text.secondary">Nenhum histórico familiar relatado</Typography>
                   )}
                 </Box>
 
                 {/* ApoE biomarker panel */}
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>ApoE Biomarkers & Risk Vectors</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Marcadores ApoE e fatores de risco</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="risks-tag-chips-pile">
                     {history?.riskFactors.map((r, idx) => (
                       <Chip key={idx} label={r} size="small" variant="outlined" color="error" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
@@ -406,7 +406,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
 
                 {/* Comorbidities */}
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Registered Comorbidities</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Comorbidades registradas</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="comorbidities-tag-chips-pile">
                     {history?.comorbidities.map((c, idx) => (
                       <Chip key={idx} label={c} size="small" variant="outlined" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
@@ -416,7 +416,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
 
                 {/* Active medications */}
                 <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Admitted Medications</Typography>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Medicamentos em uso</Typography>
                   <Box sx={{ pl: 1, borderLeft: 2, borderColor: 'primary.light' }} id="medications-review-list">
                     {history?.medications.map((m, idx) => (
                       <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'bold', color: 'text.secondary' }}>
@@ -442,21 +442,21 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                 id="patient-tabs-navbar"
               >
                 <Tab 
-                  label="Cognitive assessments" 
+                  label="Avaliações cognitivas" 
                   value="clinical" 
                   icon={<FileTextIcon fontSize="small" />} 
                   iconPosition="start"
                   sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '12px' }}
                 />
                 <Tab 
-                  label="Neuroimaging (MRI 3T)" 
+                  label="Neuroimagem (Ressonância 3T)" 
                   value="imaging" 
                   icon={<BrainIcon fontSize="small" />} 
                   iconPosition="start"
                   sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '12px' }}
                 />
                 <Tab 
-                  label="Explainable AI" 
+                  label="IA explicável" 
                   value="ai" 
                   icon={<CpuIcon fontSize="small" />} 
                   iconPosition="start"
@@ -475,10 +475,10 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                   <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }} id="clinical-scores-grid">
                     <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">MMSE SCORE</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">PONTUAÇÃO MMSE</Typography>
                         <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMmse} / {cognitive?.mmse?.maxScore ?? 30}</Typography>
                         <Chip 
-                          label={cognitive?.mmse?.status ?? 'Not Available'} 
+                          label={cognitive?.mmse?.status ?? 'Não disponível'} 
                           color={cognitive?.mmse?.status === 'Severe' ? 'error' : cognitive?.mmse?.status === 'Mild Cognitive Impairment' ? 'warning' : 'success'} 
                           size="small" 
                           sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
@@ -488,10 +488,10 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
 
                     <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">MOCA SCORE</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">PONTUAÇÃO MOCA</Typography>
                         <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMoca} / {cognitive?.moca?.maxScore ?? 30}</Typography>
                         <Chip 
-                          label={cognitive?.moca?.status ?? 'Not Available'} 
+                          label={cognitive?.moca?.status ?? 'Não disponível'} 
                           color={cognitive?.moca?.status === 'Severe' ? 'error' : cognitive?.moca?.status === 'Mild Cognitive Impairment' ? 'warning' : 'success'} 
                           size="small" 
                           sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
@@ -501,10 +501,10 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
 
                     <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CDR CLINICAL RATING</Typography>
+                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CLASSIFICAÇÃO CDR</Typography>
                         <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayCdr} / 3.0</Typography>
                         <Chip 
-                          label={cognitive?.cdr?.status ?? 'Not Available'} 
+                          label={cognitive?.cdr?.status ?? 'Não disponível'} 
                           color="info" 
                           size="small" 
                           sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
@@ -516,8 +516,8 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                   {/* Cognitive score evolution line-chart */}
                   <Paper variant="outlined" id="historical-eval-trends-card" sx={{ p: 2.5, borderRadius: 2 }}>
                     <Box sx={{ mb: 2 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Historical Cognitive Trends</Typography>
-                      <Typography variant="caption" color="text.secondary">Retrospective timeline mapping cognitive score evaluations (last 4 visits).</Typography>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Tendências cognitivas históricas</Typography>
+                      <Typography variant="caption" color="text.secondary">Linha do tempo retrospectiva das avaliações cognitivas (últimas 4 consultas).</Typography>
                     </Box>
 
                     {/* Integrated Recharts Line chart */}
@@ -550,7 +550,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                       {/* Left: Interactive Slice slider structure */}
                       <Box>
                         <Paper variant="outlined" sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }} id="interactive-slice-controller-card">
-                          <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Coronal Plane Reconstruction</Typography>
+                          <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Reconstrução no plano coronal</Typography>
                           
                           {/* Inner interactive canvas */}
                           {renderInteractiveScan()}
@@ -558,7 +558,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                           {/* Depth slider controls */}
                           <Box sx={{ width: '100%', px: 1, mt: 1 }}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', mb: 0.5 }} color="text.secondary">
-                              Positional Z-Slice: {sliceDepth}%
+                              Fatia Z posicional: {sliceDepth}%
                             </Typography>
                             <Slider 
                               value={sliceDepth} 
@@ -581,7 +581,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                                     id="mri-heatmap-toggle"
                                   />
                                 }
-                                label={<Typography variant="caption" sx={{ fontWeight: 'bold' }}>AI Volumetric Highlight Overlay (MONAI)</Typography>}
+                                label={<Typography variant="caption" sx={{ fontWeight: 'bold' }}>Sobreposição de destaque volumétrico por IA (MONAI)</Typography>}
                               />
                             </Box>
                           </Box>
@@ -594,10 +594,10 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                           {/* Biomarker details card */}
                           <Card variant="outlined" id="scan-raw-metrics">
                             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                              <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">IMAGING MODALITY CONFIG</Typography>
+                              <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CONFIGURAÇÃO DA MODALIDADE DE IMAGEM</Typography>
                               <Typography variant="body2" sx={{ fontWeight: 'extrabold', mt: 1 }}>{exam.scanType} • {exam.scanDate}</Typography>
                               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                Slice: {exam.metadata.sliceThickness} • Field: {exam.metadata.magneticStrength || "3.0T Core"}
+                                Fatia: {exam.metadata.sliceThickness} • Campo: {exam.metadata.magneticStrength || "3.0T Core"}
                               </Typography>
                             </CardContent>
                           </Card>
@@ -606,14 +606,14 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                           {imagingAnalysis && (
                             <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }} id="calculated-volumetrics-card">
                               <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', mb: 1.5 }} color="text.secondary">
-                                AI CALCULATED REGIONAL VOLUMETRICS
+                                VOLUMETRIAS REGIONAIS CALCULADAS POR IA
                               </Typography>
                               
                               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }} id="volume-factors-list">
                                 {/* Left Hippocampal Volume */}
                                 <Box>
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Left Hippocampal Volume</Typography>
+                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Volume hipocampal esquerdo</Typography>
                                     <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.hippocampalVolumeLeft} cm³</Typography>
                                   </Box>
                                   <LinearProgress variant="determinate" value={Math.min(100, (imagingAnalysis.hippocampalVolumeLeft / 4.5) * 100)} sx={{ height: 4, borderRadius: 1 }} color="primary" />
@@ -622,7 +622,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                                 {/* Right Hippocampal Volume */}
                                 <Box>
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Right Hippocampal Volume</Typography>
+                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Volume hipocampal direito</Typography>
                                     <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.hippocampalVolumeRight} cm³</Typography>
                                   </Box>
                                   <LinearProgress variant="determinate" value={Math.min(100, (imagingAnalysis.hippocampalVolumeRight / 4.5) * 100)} sx={{ height: 4, borderRadius: 1 }} color="primary" />
@@ -631,7 +631,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                                 {/* Ventricular ratio */}
                                 <Box>
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Ventricular Enlargement Ratio</Typography>
+                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Razão de enlargement ventricular</Typography>
                                     <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.ventricleEnlargementRatio.toFixed(3)}</Typography>
                                   </Box>
                                   <LinearProgress variant="determinate" value={Math.min(100, (imagingAnalysis.ventricleEnlargementRatio / 0.1) * 100)} sx={{ height: 4, borderRadius: 1 }} color="warning" />
@@ -640,7 +640,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                                 {/* Cortical depth average */}
                                 <Box>
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Avg Cortical Thickness</Typography>
+                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Espessura cortical média</Typography>
                                     <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.corticalThicknessAvg} mm</Typography>
                                   </Box>
                                   <LinearProgress variant="determinate" value={Math.min(100, (imagingAnalysis.corticalThicknessAvg / 3) * 100)} sx={{ height: 4, borderRadius: 1 }} color="success" />
@@ -668,16 +668,16 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                       {mriUploading ? (
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, maxWidth: 280, mx: 'auto' }} id="mri-uploader-running">
                           <CircularProgress />
-                          <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Simulating coronal structural slicing...</Typography>
+                          <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Simulando corte estrutural coronal...</Typography>
                         </Box>
                       ) : (
                         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }} id="mri-uploader-idle">
                           <Box sx={{ p: 1.5, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: '50%', display: 'flex' }}>
                             <UploadIcon fontSize="large" />
                           </Box>
-                          <Typography variant="body1" sx={{ fontWeight: 'bold' }}>MRI Scan Missing for this Patient Profile</Typography>
+                          <Typography variant="body1" sx={{ fontWeight: 'bold' }}>Imagem de ressonância ausente para este perfil</Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ maxWidth: 400, mx: 'auto' }}>
-                            Upload high-field 3T coronal T1-weighted structural voxel sets (.nii or .nii.gz format) to initiate hippocampus volumetrics.
+                            Faça upload de conjuntos de voxels estruturais coronais ponderados em T1 de 3T (.nii ou .nii.gz) para iniciar as volumetrias do hipocampo.
                           </Typography>
                           <Box sx={{ position: 'relative', mt: 1 }}>
                             <input
@@ -715,7 +715,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                                 sx={{ fontWeight: 'bold' }}
                                 onClick={() => fileInputRef.current?.click()}
                             >
-                                Choose Voxel Dataset
+                                Escolher conjunto de voxels
                             </Button>
                             {uploadError && (
                                 <Alert severity="error" sx={{ maxWidth: 420 }}>
@@ -725,14 +725,14 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
 
                                 {uploadedFile && !uploadError && (
                                 <Alert severity="success" sx={{ maxWidth: 420 }}>
-                                    MRI enviada com sucesso: {uploadedFile}. A aba AI Predictor foi atualizada com a prediction mais recente.
+                                    MRI enviada com sucesso: {uploadedFile}. A aba de IA explicável foi atualizada com a previsão mais recente.
                                 </Alert>
                             )}
 
                           </Box>
                           {uploadedFile && (
                             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold' }}>
-                              ✓ Simulation Upload Successful: {uploadedFile}. Refresh page to re-run metrics.
+                              ✓ Upload simulado concluído: {uploadedFile}. Recarregue a página para executar as métricas novamente.
                             </Typography>
                           )}
                         </Box>
@@ -779,13 +779,13 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                       
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 'black', textTransform: 'uppercase', color: mergedAiAnalysis.riskCategory === 'High' ? 'error.main' : mergedAiAnalysis.riskCategory === 'Moderate' ? 'warning.main' : 'success.main' }}>
-                          Prognosis Prediction: {mergedAiAnalysis.riskCategory} Risk AD
+                          Previsão prognóstica: risco {mergedAiAnalysis.riskCategory} de DA
                         </Typography>
                         <Typography variant="caption" sx={{ display: 'block', mt: 0.5, lineHeight: 1.4 }} color="text.secondary">
                           {mergedAiAnalysis.explainability.aiReasoningSummary}
                         </Typography>
                         <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', display: 'block', mt: 1, fontWeight: 'bold' }}>
-                          Confidence Quotient: {(mergedAiAnalysis.confidenceScore * 100).toFixed(1)}% (PyTorch Attributions Calibrated)
+                          Quociente de confiança: {(mergedAiAnalysis.confidenceScore * 100).toFixed(1)}% (atribuições do PyTorch calibradas)
                         </Typography>
                       </Box>
                     </Paper>
@@ -799,10 +799,10 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                         <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, height: '100%' }} id="shap-bar-chart-card">
                           <Box sx={{ mb: 2 }}>
                             <Typography variant="caption" sx={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} color="text.secondary">
-                              VARIABLES INFLUENCE ATTRIBUTES
+                              VARIÁVEIS QUE INFLUENCIAM A PREVISÃO
                             </Typography>
                             <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }} color="text.secondary">
-                              Primary variables pulling predicted risk up (+) or keeping risk levels baseline (-)
+                              Variáveis principais que elevam (+) ou mantêm (-) o risco previsto
                             </Typography>
                           </Box>
 
@@ -856,7 +856,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                           >
                             <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
                               <Box sx={{ width: 6, height: 6, bgcolor: '#f43f5e', borderRadius: '50%', animation: 'pulse 1.5s infinite' }} />
-                              High Risk Drivers Identified
+                              Fatores de alto risco identificados
                             </Typography>
                             
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} id="risk-drivers-list">
@@ -881,7 +881,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                             }}
                           >
                             <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                              ⚡ Protective Factors Flagged
+                              ⚡ Fatores protetores identificados
                             </Typography>
 
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} id="protective-drivers-list">

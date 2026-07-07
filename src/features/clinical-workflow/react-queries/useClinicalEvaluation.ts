@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { updateClinicalEvaluation } from '../requests/updateClinicalEvaluation';
 import type { UseClinicalEvaluationVariables } from '../types/clinicalWorkflow.types';
-import { patientsQueryKey } from '../../dashboard/react-queries/usePatients';
-import { patientQueryKey } from '../../patient-profile/react-queries/usePatient';
+import { getPatientsQueryKey } from '../../dashboard/react-queries/useGetPatients';
+import { getPatientQueryKey } from '../../patient-profile/react-queries/useGetPatient';
 
 export const useClinicalEvaluation = () => {
   const queryClient = useQueryClient();
@@ -11,9 +11,9 @@ export const useClinicalEvaluation = () => {
     mutationFn: (variables: UseClinicalEvaluationVariables) =>
       updateClinicalEvaluation(variables),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [patientsQueryKey] });
+      queryClient.invalidateQueries({ queryKey: [getPatientsQueryKey] });
       queryClient.invalidateQueries({
-        queryKey: [patientQueryKey, variables.patientId],
+        queryKey: [getPatientQueryKey, variables.patientId],
       });
     },
   });
