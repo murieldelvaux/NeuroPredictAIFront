@@ -1,10 +1,8 @@
 import { useMutation } from '@tanstack/react-query';
 import { predict } from '../requests/predict';
-import type { PredictPayload } from '@/src/types/api';
-import { adaptPredictionOut } from '@/src/clients/adapters';
+import type { PredictPayload, PredictionResponse } from '@/src/types/api';
 
 export const usePredict = () =>
-  useMutation({
-    mutationFn: (payload: PredictPayload) =>
-      predict(payload).then(adaptPredictionOut),
+  useMutation<PredictionResponse, Error, PredictPayload>({
+    mutationFn: (payload) => predict(payload),
   });

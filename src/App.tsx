@@ -26,6 +26,7 @@ import ClinicalWorkflow from './features/clinical-workflow/components/ClinicalWo
 import { useCreatePatient } from './features/clinical-workflow/react-queries/useCreatePatient';
 import { useGetPatients } from './features/dashboard/react-queries/useGetPatients';
 import { useGetPatient } from './features/patient-profile/react-queries/useGetPatient';
+import type { PatientCreatePayload } from './types';
 
 function WorkspaceRoot({
   isDarkMode,
@@ -57,8 +58,8 @@ function WorkspaceRoot({
 
   console.log("---> Active Detail:", activeDetail);
   console.log("---> Patients:", patients);
-  const handleCreatePatientSubmit = (variables: any) => {
-    createPatientMutation.mutate(variables, {
+  const handleCreatePatientSubmit = (payload: PatientCreatePayload) => {
+    createPatientMutation.mutate(payload, {
       onSuccess: (newPatient) => {
         // Navigate to profile immediately after creation
         setSelectedPatientId(newPatient.id);

@@ -97,7 +97,7 @@ export default function DoctorDashboard({
       {/* Metric Cards */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: '1fr 1fr 1fr 1fr' }, gap: 2.5 }} id="dashboard-metric-grid">
         <Box id="card-metric-total">
-          <Card>
+          <Card style={{ height: "100%"  }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Registro clínico</Typography>
@@ -112,7 +112,7 @@ export default function DoctorDashboard({
         </Box>
 
         <Box id="card-metric-critical">
-          <Card>
+          <Card style={{ height: "100%"  }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Prioridade crítica</Typography>
@@ -127,7 +127,7 @@ export default function DoctorDashboard({
         </Box>
 
         <Box id="card-metric-average">
-          <Card>
+          <Card style={{ height: "100%"  }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Fator médio de prognóstico</Typography>
@@ -142,7 +142,7 @@ export default function DoctorDashboard({
         </Box>
 
         <Box id="card-metric-imaging">
-          <Card>
+          <Card style={{ height: "100%"  }}>
             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Typography variant="caption" sx={{ fontWeight: 'bold', letterSpacing: '0.05em', color: 'text.secondary', textTransform: 'uppercase' }}>Pipeline de imagem</Typography>
@@ -234,14 +234,17 @@ export default function DoctorDashboard({
               </TableHead>
               <TableBody>
                 {filteredPatients.map(p => {
-                  const riskConfig = ({ High: { color: 'error' as const, label: `High (${p.riskScore}%)` }, Moderate: { color: 'warning' as const, label: `Moderate (${p.riskScore}%)` }, Low: { color: 'success' as const, label: `Low (${p.riskScore}%)` } } as Record<string, { color: 'error' | 'warning' | 'success'; label: string }>)[p.riskCategory] ?? { color: 'default' as const, label: `Unknown (${p.riskScore ?? 0}%)` };
-                  const statusColor = ({ Completed: 'success' as const, 'Pending Interpretation': 'primary' as const, 'Awaiting MRI': 'default' as const } as Record<string, 'success' | 'primary' | 'default'>)[p.status] ?? 'default' as const;
+                  const riskCategory = (p.risk_category ?? '').toLowerCase();
+                  const normalizedCategory = riskCategory.includes('high') ? 'High' : riskCategory.includes('moderate') || riskCategory.includes('mci') ? 'Moderate' : riskCategory.includes('low') || riskCategory.includes('cn') ? 'Low' : 'Unknown';
+                  const riskScore = Math.round((p.risk_score ?? 0) * 100);
+                  const riskConfig = ({ High: { color: 'error' as const, label: `High (${riskScore}%)` }, Moderate: { color: 'warning' as const, label: `Moderate (${riskScore}%)` }, Low: { color: 'success' as const, label: `Low (${riskScore}%)` }, Unknown: { color: 'default' as const, label: `Unknown (${riskScore}%)` } } as Record<string, { color: 'error' | 'warning' | 'success' | 'default'; label: string }>)[normalizedCategory];
+                  const statusColor = ({ Completed: 'success' as const, 'Pending Interpretation': 'primary' as const, 'Awaiting MRI': 'default' as const } as Record<string, 'success' | 'primary' | 'default'>)[p.status ?? 'Pending Interpretation'] ?? 'default' as const;
                   return (
                     <TableRow key={p.id} hover id={`cohort-row-${p.id}`} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                       <TableCell sx={{ py: 1.5 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                           <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary', fontWeight: 'bold' }}>{p.id.toUpperCase()}</Typography>
-                          <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontSize: '9px' }}>{p.mrn}</Typography>
+                          <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontSize: '9px' }}>{p.mrn ?? '—'}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell sx={{ py: 1.5 }}>
@@ -251,11 +254,11 @@ export default function DoctorDashboard({
                       <TableCell sx={{ py: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                           <CalendarIcon sx={{ fontSize: 13 }} />
-                          <Typography variant="body2">{p.lastEvaluated}</Typography>
+                          <Typography variant="body2">{p.last_evaluated ?? '—'}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell sx={{ py: 1.5 }} align="center"><Chip label={riskConfig.label} color={riskConfig.color} size="small" variant="outlined" sx={{ fontWeight: 'bold', fontSize: '10px', height: 20 }} /></TableCell>
-                      <TableCell sx={{ py: 1.5 }} align="center"><Chip label={p.status} color={statusColor} size="small" sx={{ fontWeight: 'bold', fontSize: '9px', height: 18 }} /></TableCell>
+                      <TableCell sx={{ py: 1.5 }} align="center"><Chip label={p.status ?? 'Pending Interpretation'} color={statusColor} size="small" sx={{ fontWeight: 'bold', fontSize: '9px', height: 18 }} /></TableCell>
                       <TableCell sx={{ py: 1.5 }} align="right">
                         <Button variant="outlined" size="small" onClick={() => onSelectPatient(p.id)} endIcon={<ArrowRightIcon fontSize="inherit" />} id={`btn-review-file-${p.id}`} sx={{ fontSize: '10px', py: 0.25, px: 1, fontWeight: 'bold', color: 'text.secondary', borderColor: 'divider', '&:hover': { bgcolor: 'primary.main', color: '#ffffff', borderColor: 'primary.main' } }}>Ver prontuário</Button>
                       </TableCell>

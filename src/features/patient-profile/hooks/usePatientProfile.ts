@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { AIAnalysisResult } from '../../../types';
+import type { PredictionResponse } from '../../../types';
 import { usePredict } from '../../prediction/react-queries/usePredict';
 
 export function usePatientProfile() {
@@ -8,7 +8,7 @@ export function usePatientProfile() {
   const [showHeatmap, setShowHeatmap] = useState<boolean>(true);
   const [mriUploading, setMriUploading] = useState<boolean>(false);
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
-  const [predictedAiAnalysis, setPredictedAiAnalysis] = useState<AIAnalysisResult | null>(null);
+  const [predictedAiAnalysis, setPredictedAiAnalysis] = useState<PredictionResponse | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const { mutate: predictMutation } = usePredict();
 

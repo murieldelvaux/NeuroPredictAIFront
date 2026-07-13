@@ -1,7 +1,7 @@
-import { Patient } from '../../../types';
+import type { PatientListItem } from '../../../types';
 
 export interface DoctorDashboardProps {
-  patients: Patient[];
+  patients: PatientListItem[];
   isLoading: boolean;
   onSelectPatient: (id: string) => void;
   onStartWorkflow: () => void;

@@ -1,15 +1,28 @@
-import type { UseClinicalEvaluationVariables } from '../types/clinicalWorkflow.types';
 import { getPatient } from '../../patient-profile/requests/getPatient';
-import type { Patient } from '../../../types';
-import { adaptPatientOut } from '../../../lib/mappers/adaptPatientOut';
+import type { PatientResponse } from '../../../types';
+
+type UpdateClinicalEvaluationVariables = {
+  patientId: string;
+  cognitive: {
+    mmse: number;
+    moca: number;
+    cdr: number;
+    cdrtot?: number;
+  };
+  historyUpdate?: Partial<{
+    symptoms: string[];
+    medications: string[];
+    comorbidities: string[];
+  }>;
+};
 
 /**
  * Writes cognitive evaluation updates to localStorage.
  * Will be replaced by a real PATCH /patients/:id endpoint.
  */
 export const updateClinicalEvaluation = async (
-  variables: UseClinicalEvaluationVariables,
-): Promise<Patient> => {
+  variables: UpdateClinicalEvaluationVariables,
+): Promise<PatientResponse> => {
   const detail = await getPatient(variables.patientId);
 
   const rawCognitive = localStorage.getItem('np_cognitive');
@@ -52,17 +65,15 @@ export const updateClinicalEvaluation = async (
     }
   }
 
-  const patientSummary = {
+  return {
     id: detail.patient.id,
     name: detail.patient.name,
     age: detail.patient.age,
     sex: detail.patient.sex,
-    mrn: detail.demographics?.mrn as string | undefined,
-    risk_score: detail.patient.last_prediction?.risk_score ?? 0,
-    risk_category: detail.patient.last_prediction?.classification ?? '',
-    last_evaluated: detail.patient.created_at ?? '—',
-    status: 'Pending Interpretation',
+    mrn: detail.demographics?.mrn ?? null,
+    date_of_birth: detail.patient.date_of_birth ?? null,
+    created_at: detail.patient.created_at,
+    last_prediction: detail.patient.last_prediction ?? null,
+    clinical_data: detail.patient.clinical_data ?? null,
   };
-
-  return adaptPatientOut(patientSummary);
 };

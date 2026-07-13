@@ -1,14 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { createPatient, type CreatePatientVariables } from '../requests/createPatient';
-import { adaptPatientOut } from '@/src/clients/adapters';
+import { createPatient } from '../requests/createPatient';
 import { getPatientsQueryKey } from '../../dashboard/react-queries/useGetPatients';
+import type { PatientCreatePayload, PatientResponse } from '@/src/types';
 
 export const useCreatePatient = () => {
   const queryClient = useQueryClient();
 
-  return useMutation({
-    mutationFn: (vars: CreatePatientVariables) =>
-      createPatient(vars).then(adaptPatientOut),
+  return useMutation<PatientResponse, Error, PatientCreatePayload>({
+    mutationFn: (vars) => createPatient(vars),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [getPatientsQueryKey] });
     },

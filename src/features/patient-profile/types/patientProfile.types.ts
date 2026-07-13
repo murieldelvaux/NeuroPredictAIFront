@@ -1,13 +1,6 @@
-import type { PatientRecord, AIAnalysisResult } from '../../../types';
+import type { PatientDetailResponse } from '../../../types';
 
 export type PatientProfileProps = {
-  patientId: string;
+  patientRecord: PatientDetailResponse | null;
   onBack?: () => void;
-};
-
-export type PatientProfileState = {
-  record: PatientRecord | null;
-  analysis: AIAnalysisResult | null;
-  isLoading: boolean;
-  error: string | null;
 };

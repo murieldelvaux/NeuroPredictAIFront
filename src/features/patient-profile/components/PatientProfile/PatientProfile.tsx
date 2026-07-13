@@ -49,20 +49,29 @@ import { usePatientProfile } from '../../hooks/usePatientProfile';
 
 export default function PatientProfile({ patientRecord, onBack }: PatientProfileProps) {
   const theme = useTheme();
-  const { patient, demographics, history, cognitive, exam, imagingAnalysis } = patientRecord;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const patient = patientRecord?.patient;
+  const demographics = patientRecord?.demographics;
+  const history = patientRecord?.history;
+  const cognitive = patientRecord?.patient?.clinical_data;
+  const exam = patientRecord?.exam;
+  const imagingAnalysis = patientRecord?.imaging_analysis;
+
+  if (!patientRecord || !patient) {
+    return null;
+  }
 
   const displayName = demographics?.name ?? patient.name;
   const displayMrn = demographics?.mrn ?? patient.mrn;
   const displayGender = demographics?.sex === 'F' ? 'Feminino' : demographics?.sex === 'M' ? 'Masculino' : patient.sex === 'F' ? 'Feminino' : patient.sex === 'M' ? 'Masculino' : 'Outro';
   const displayDob = demographics?.date_of_birth ?? '—';
   const displayAge = demographics?.age ?? patient.age;
-  const displayEducation = cognitive?.educationYears ?? 0;
+  const displayEducation = cognitive?.education_years ?? 0;
   const displayPhone = demographics?.phone ?? '—';
   const displayEmail = demographics?.email ?? '—';
-  const displayMmse = cognitive?.mmse?.score ?? 0;
-  const displayMoca = cognitive?.moca?.score ?? 0;
-  const displayCdr = cognitive?.cdr?.score ?? 0;
+  const displayMmse = cognitive?.mmse ?? 0;
+  const displayMoca = cognitive?.moca ?? 0;
+  const displayCdr = cognitive?.cdr ?? 0;
 
   console.log("---> PatientProfile Rendered with patientRecord:", patientRecord);
   // Utilize logic-less extraction hook
@@ -83,19 +92,14 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
   const mergedAiAnalysis = predictedAiAnalysis;
 
   // Cognitive Score evolution helper for charts
-  const historySeries = (cognitive?.history ?? []).map((item) => ({
-    name: item.date,
-    MMSE: item.mmse,
-    MoCA: item.moca,
-    CDR: item.cdr * 10, // scale CDR by 10 for better visualization on same axis
-  }));
+  const historySeries: Array<{ name: string; MMSE?: number; MoCA?: number; CDR?: number }> = [];
 
   // SHAP explanatory factor series helper for charts
-  const shapData = mergedAiAnalysis?.explainability.shapAttributions.map(item => ({
-    name: item.featureName,
-    value: Math.round(item.attributionValue * 100),
-    category: item.category
-    })) || [];
+  const shapData = (mergedAiAnalysis?.explanation ?? []).map((item) => ({
+    name: item.feature,
+    value: Math.round((item.impact ?? 0) * 100),
+    category: item.direction === 'risk' ? 'risk' : 'protective',
+  }));
 
   // MRI scan simulation visualizer
   const renderInteractiveScan = () => {
@@ -323,8 +327,8 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                   </Typography>
                 </Box>
                 <Chip 
-                  label={patient.riskCategory} 
-                  color={patient.riskCategory === 'High' ? 'error' : patient.riskCategory === 'Moderate' ? 'warning' : 'success'} 
+                  label={patient.last_prediction?.classification ?? 'Sem predição'} 
+                  color={patient.last_prediction?.risk_score && patient.last_prediction.risk_score >= 0.6 ? 'error' : patient.last_prediction?.risk_score && patient.last_prediction.risk_score >= 0.3 ? 'warning' : 'success'} 
                   size="small" 
                   sx={{ fontWeight: 'bold', height: 22 }}
                 />
@@ -373,7 +377,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Sintomas atuais</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="symptom-tag-chips-pile">
-                    {history?.symptoms.map((s, idx) => (
+                    {(history?.symptoms ?? history?.active_presenting_symptoms ?? []).map((s, idx) => (
                       <Chip key={idx} label={s} size="small" variant="filled" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
                     ))}
                   </Box>
@@ -382,11 +386,11 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                 {/* Hereditary family context */}
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Histórico familiar de demência</Typography>
-                  {history?.familyHistory?.dementiaCount && history.familyHistory.dementiaCount > 0 ? (
+                  {history?.dementia_count && history.dementia_count > 0 ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} id="family-relation-line">
                       <DnaIcon sx={{ fontSize: 13, color: 'primary.main' }} />
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        {history?.familyHistory?.dementiaCount} parentes diagnosticados ({history?.familyHistory?.alzheimersRelation?.join(', ')})
+                        {history?.dementia_count} parentes diagnosticados ({history?.alzheimers_relation?.join(', ')})
                       </Typography>
                     </Box>
                   ) : (
@@ -398,7 +402,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Marcadores ApoE e fatores de risco</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="risks-tag-chips-pile">
-                    {history?.riskFactors.map((r, idx) => (
+                    {(history?.risk_factors ?? history?.apoe_biomarkers_risk_vectors ?? []).map((r, idx) => (
                       <Chip key={idx} label={r} size="small" variant="outlined" color="error" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
                     ))}
                   </Box>
@@ -408,7 +412,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Comorbidades registradas</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="comorbidities-tag-chips-pile">
-                    {history?.comorbidities.map((c, idx) => (
+                    {(history?.comorbidities ?? history?.registered_comorbidities ?? []).map((c, idx) => (
                       <Chip key={idx} label={c} size="small" variant="outlined" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
                     ))}
                   </Box>
@@ -418,7 +422,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Medicamentos em uso</Typography>
                   <Box sx={{ pl: 1, borderLeft: 2, borderColor: 'primary.light' }} id="medications-review-list">
-                    {history?.medications.map((m, idx) => (
+                    {(history?.medications ?? history?.admitted_medications ?? []).map((m, idx) => (
                       <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'bold', color: 'text.secondary' }}>
                         • {m}
                       </Typography>
@@ -476,10 +480,10 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                     <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">PONTUAÇÃO MMSE</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMmse} / {cognitive?.mmse?.maxScore ?? 30}</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMmse} / 30</Typography>
                         <Chip 
-                          label={cognitive?.mmse?.status ?? 'Não disponível'} 
-                          color={cognitive?.mmse?.status === 'Severe' ? 'error' : cognitive?.mmse?.status === 'Mild Cognitive Impairment' ? 'warning' : 'success'} 
+                          label="Avaliação" 
+                          color="primary" 
                           size="small" 
                           sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
                         />
@@ -489,10 +493,10 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                     <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
                       <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                         <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">PONTUAÇÃO MOCA</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMoca} / {cognitive?.moca?.maxScore ?? 30}</Typography>
+                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMoca} / 30</Typography>
                         <Chip 
-                          label={cognitive?.moca?.status ?? 'Não disponível'} 
-                          color={cognitive?.moca?.status === 'Severe' ? 'error' : cognitive?.moca?.status === 'Mild Cognitive Impairment' ? 'warning' : 'success'} 
+                          label="Avaliação" 
+                          color="primary" 
                           size="small" 
                           sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
                         />
@@ -504,7 +508,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                         <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CLASSIFICAÇÃO CDR</Typography>
                         <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayCdr} / 3.0</Typography>
                         <Chip 
-                          label={cognitive?.cdr?.status ?? 'Não disponível'} 
+                          label="Avaliação" 
                           color="info" 
                           size="small" 
                           sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
@@ -595,9 +599,9 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                           <Card variant="outlined" id="scan-raw-metrics">
                             <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
                               <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CONFIGURAÇÃO DA MODALIDADE DE IMAGEM</Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 'extrabold', mt: 1 }}>{exam.scanType} • {exam.scanDate}</Typography>
+                              <Typography variant="body2" sx={{ fontWeight: 'extrabold', mt: 1 }}>{exam.scan_type ?? '—'} • {exam.scan_date ?? '—'}</Typography>
                               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                Fatia: {exam.metadata.sliceThickness} • Campo: {exam.metadata.magneticStrength || "3.0T Core"}
+                                Fatia: {exam.slice_thickness ?? '—'} • Campo: {exam.magnetic_strength || '3.0T Core'}
                               </Typography>
                             </CardContent>
                           </Card>
@@ -614,36 +618,36 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                                 <Box>
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                                     <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Volume hipocampal esquerdo</Typography>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.hippocampalVolumeLeft} cm³</Typography>
+                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.left_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_left ?? '—'} cm³</Typography>
                                   </Box>
-                                  <LinearProgress variant="determinate" value={Math.min(100, (imagingAnalysis.hippocampalVolumeLeft / 4.5) * 100)} sx={{ height: 4, borderRadius: 1 }} color="primary" />
+                                  <LinearProgress variant="determinate" value={Math.min(100, ((imagingAnalysis.left_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_left ?? 0) / 4.5) * 100)} sx={{ height: 4, borderRadius: 1 }} color="primary" />
                                 </Box>
 
                                 {/* Right Hippocampal Volume */}
                                 <Box>
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                                     <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Volume hipocampal direito</Typography>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.hippocampalVolumeRight} cm³</Typography>
+                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.right_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_right ?? '—'} cm³</Typography>
                                   </Box>
-                                  <LinearProgress variant="determinate" value={Math.min(100, (imagingAnalysis.hippocampalVolumeRight / 4.5) * 100)} sx={{ height: 4, borderRadius: 1 }} color="primary" />
+                                  <LinearProgress variant="determinate" value={Math.min(100, ((imagingAnalysis.right_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_right ?? 0) / 4.5) * 100)} sx={{ height: 4, borderRadius: 1 }} color="primary" />
                                 </Box>
 
                                 {/* Ventricular ratio */}
                                 <Box>
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                                     <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Razão de enlargement ventricular</Typography>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.ventricleEnlargementRatio.toFixed(3)}</Typography>
+                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{(imagingAnalysis.ventricle_enlargement_ratio ?? imagingAnalysis.ventricle_ratio ?? 0).toFixed(3)}</Typography>
                                   </Box>
-                                  <LinearProgress variant="determinate" value={Math.min(100, (imagingAnalysis.ventricleEnlargementRatio / 0.1) * 100)} sx={{ height: 4, borderRadius: 1 }} color="warning" />
+                                  <LinearProgress variant="determinate" value={Math.min(100, ((imagingAnalysis.ventricle_enlargement_ratio ?? imagingAnalysis.ventricle_ratio ?? 0) / 0.1) * 100)} sx={{ height: 4, borderRadius: 1 }} color="warning" />
                                 </Box>
 
                                 {/* Cortical depth average */}
                                 <Box>
                                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
                                     <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Espessura cortical média</Typography>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.corticalThicknessAvg} mm</Typography>
+                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.cortical_thickness_avg ?? imagingAnalysis.cortical_thickness ?? '—'} mm</Typography>
                                   </Box>
-                                  <LinearProgress variant="determinate" value={Math.min(100, (imagingAnalysis.corticalThicknessAvg / 3) * 100)} sx={{ height: 4, borderRadius: 1 }} color="success" />
+                                  <LinearProgress variant="determinate" value={Math.min(100, ((imagingAnalysis.cortical_thickness_avg ?? imagingAnalysis.cortical_thickness ?? 0) / 3) * 100)} sx={{ height: 4, borderRadius: 1 }} color="success" />
                                 </Box>
                               </Box>
                             </Paper>
@@ -693,9 +697,9 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                                     patientId: patient.id,
                                     file,
                                     age: demographics?.age ?? patient.age,
-                                    mmse: cognitive?.mmse.score ?? null,
-                                    cdr: cognitive?.cdr.score ?? null,
-                                    cdrtot: cognitive?.cdr.score ?? null,
+                                    mmse: displayMmse,
+                                    cdr: displayCdr,
+                                    cdrtot: displayCdr,
                                 });
 
                                 e.target.value = '';
@@ -757,35 +761,35 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                         flexDirection: { xs: 'column', sm: 'row' }, 
                         alignItems: 'center', 
                         gap: 3,
-                        borderColor: mergedAiAnalysis.riskCategory === 'High' ? 'error.light' : mergedAiAnalysis.riskCategory === 'Moderate' ? 'warning.light' : 'success.light',
-                        bgcolor: mergedAiAnalysis.riskCategory === 'High' ? 'rgba(239, 68, 68, 0.02)' : mergedAiAnalysis.riskCategory === 'Moderate' ? 'rgba(245, 158, 11, 0.02)' : 'rgba(16, 185, 129, 0.02)'
+                        borderColor: mergedAiAnalysis.risk_score >= 0.6 ? 'error.light' : mergedAiAnalysis.risk_score >= 0.3 ? 'warning.light' : 'success.light',
+                        bgcolor: mergedAiAnalysis.risk_score >= 0.6 ? 'rgba(239, 68, 68, 0.02)' : mergedAiAnalysis.risk_score >= 0.3 ? 'rgba(245, 158, 11, 0.02)' : 'rgba(16, 185, 129, 0.02)'
                       }}
                     >
                       {/* Percent badge */}
                       <Box sx={{ position: 'relative', display: 'flex', shrink: 0 }}>
                         <CircularProgress 
                           variant="determinate" 
-                          value={Math.round(mergedAiAnalysis.probability * 100)} 
+                          value={Math.round(mergedAiAnalysis.risk_score * 100)} 
                           size={72} 
                           thickness={5} 
-                          color={mergedAiAnalysis.riskCategory === 'High' ? 'error' : mergedAiAnalysis.riskCategory === 'Moderate' ? 'warning' : 'success'} 
+                          color={mergedAiAnalysis.risk_score >= 0.6 ? 'error' : mergedAiAnalysis.risk_score >= 0.3 ? 'warning' : 'success'} 
                         />
                         <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'black' }}>
-                            {Math.round(mergedAiAnalysis.probability * 100)}%
+                            {Math.round(mergedAiAnalysis.risk_score * 100)}%
                           </Typography>
                         </Box>
                       </Box>
                       
                       <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 'black', textTransform: 'uppercase', color: mergedAiAnalysis.riskCategory === 'High' ? 'error.main' : mergedAiAnalysis.riskCategory === 'Moderate' ? 'warning.main' : 'success.main' }}>
-                          Previsão prognóstica: risco {mergedAiAnalysis.riskCategory} de DA
+                        <Typography variant="body2" sx={{ fontWeight: 'black', textTransform: 'uppercase', color: mergedAiAnalysis.risk_score >= 0.6 ? 'error.main' : mergedAiAnalysis.risk_score >= 0.3 ? 'warning.main' : 'success.main' }}>
+                          Previsão prognóstica: risco {mergedAiAnalysis.classification} de DA
                         </Typography>
                         <Typography variant="caption" sx={{ display: 'block', mt: 0.5, lineHeight: 1.4 }} color="text.secondary">
-                          {mergedAiAnalysis.explainability.aiReasoningSummary}
+                          Classificação: {mergedAiAnalysis.classification} — confiança {(mergedAiAnalysis.confidence * 100).toFixed(0)}%
                         </Typography>
                         <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', display: 'block', mt: 1, fontWeight: 'bold' }}>
-                          Quociente de confiança: {(mergedAiAnalysis.confidenceScore * 100).toFixed(1)}% (atribuições do PyTorch calibradas)
+                          Quociente de confiança: {(mergedAiAnalysis.confidence * 100).toFixed(1)}% (atribuições do PyTorch calibradas)
                         </Typography>
                       </Box>
                     </Paper>
@@ -860,9 +864,9 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                             </Typography>
                             
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} id="risk-drivers-list">
-                              {mergedAiAnalysis.explainability.keyRiskDrivers.map((driver, idx) => (
+                              {(mergedAiAnalysis.explanation ?? []).filter((entry) => entry.direction === 'risk').map((driver, idx) => (
                                 <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'medium', color: theme.palette.mode === 'light' ? 'error.dark' : 'error.light' }}>
-                                  • {driver}
+                                  • {driver.feature}
                                 </Typography>
                               ))}
                             </Box>
@@ -885,9 +889,9 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                             </Typography>
 
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} id="protective-drivers-list">
-                              {mergedAiAnalysis.explainability.protectiveFactors.map((prot, idx) => (
+                              {(mergedAiAnalysis.explanation ?? []).filter((entry) => entry.direction === 'protective').map((prot, idx) => (
                                 <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'medium', color: theme.palette.mode === 'light' ? 'success.dark' : 'success.light' }}>
-                                  • {prot}
+                                  • {prot.feature}
                                 </Typography>
                               ))}
                             </Box>
