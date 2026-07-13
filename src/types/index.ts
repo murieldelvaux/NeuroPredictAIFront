@@ -7,7 +7,6 @@ export type {
   PatientCreatePayload,
   ClinicalDataPayload,
   PatientResponse,
-  PatientListItem,
   PatientDetailResponse,
   PatientLastPrediction,
   PatientDemographicsResponse,

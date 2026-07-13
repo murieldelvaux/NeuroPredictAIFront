@@ -1,6 +1,6 @@
-import type { PatientListItem, PredictionResponse } from '../types';
+import type { PatientResponse, PredictionResponse } from '../types';
 
-export function adaptPatientOut(p: PatientListItem): PatientListItem {
+export function adaptPatientOut(p: PatientResponse): PatientResponse {
   return p;
 }
 

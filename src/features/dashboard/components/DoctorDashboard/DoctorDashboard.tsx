@@ -206,6 +206,7 @@ export default function DoctorDashboard({
             <ButtonGroup size="small" variant="outlined" color="inherit" id="filter-wrapper-status" sx={{ bgcolor: 'background.paper' }}>
               <Button onClick={() => setStatusFilter('ALL')} sx={{ fontSize: '10px', fontWeight: 'bold', bgcolor: statusFilter === 'ALL' ? 'action.active' : 'transparent', color: statusFilter === 'ALL' ? 'background.paper' : 'text.primary' }}>Todos os status</Button>
               <Button onClick={() => setStatusFilter('Pending Interpretation')} sx={{ fontSize: '10px', fontWeight: 'bold', bgcolor: statusFilter === 'Pending Interpretation' ? 'primary.main' : 'transparent', color: statusFilter === 'Pending Interpretation' ? '#ffffff' : 'text.primary' }}>Pendente de IA</Button>
+              <Button onClick={() => setStatusFilter('Completed')} sx={{ fontSize: '10px', fontWeight: 'bold', bgcolor: statusFilter === 'Completed' ? 'success.main' : 'transparent', color: statusFilter === 'Completed' ? '#ffffff' : 'text.primary' }}>Concluído</Button>
             </ButtonGroup>
           </Box>
         </Box>
@@ -234,11 +235,22 @@ export default function DoctorDashboard({
               </TableHead>
               <TableBody>
                 {filteredPatients.map(p => {
-                  const riskCategory = (p.risk_category ?? '').toLowerCase();
-                  const normalizedCategory = riskCategory.includes('high') ? 'High' : riskCategory.includes('moderate') || riskCategory.includes('mci') ? 'Moderate' : riskCategory.includes('low') || riskCategory.includes('cn') ? 'Low' : 'Unknown';
-                  const riskScore = Math.round((p.risk_score ?? 0) * 100);
+                  const classification = (p.last_prediction?.classification ?? '').toLowerCase();
+                  const riskScore = Math.round((p.last_prediction?.risk_score ?? 0) * 100);
+                  const normalizedCategory = classification === 'ad'
+                    ? 'High'
+                    : classification === 'mci'
+                      ? 'Moderate'
+                      : classification === 'cn'
+                        ? 'Low'
+                        : riskScore >= 60
+                          ? 'High'
+                          : riskScore >= 30
+                            ? 'Moderate'
+                            : 'Unknown';
                   const riskConfig = ({ High: { color: 'error' as const, label: `High (${riskScore}%)` }, Moderate: { color: 'warning' as const, label: `Moderate (${riskScore}%)` }, Low: { color: 'success' as const, label: `Low (${riskScore}%)` }, Unknown: { color: 'default' as const, label: `Unknown (${riskScore}%)` } } as Record<string, { color: 'error' | 'warning' | 'success' | 'default'; label: string }>)[normalizedCategory];
-                  const statusColor = ({ Completed: 'success' as const, 'Pending Interpretation': 'primary' as const, 'Awaiting MRI': 'default' as const } as Record<string, 'success' | 'primary' | 'default'>)[p.status ?? 'Pending Interpretation'] ?? 'default' as const;
+                  const status = p.last_prediction ? 'Completed' : 'Pending Interpretation';
+                  const statusColor = ({ Completed: 'success' as const, 'Pending Interpretation': 'primary' as const } as Record<string, 'success' | 'primary'>)[status];
                   return (
                     <TableRow key={p.id} hover id={`cohort-row-${p.id}`} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
                       <TableCell sx={{ py: 1.5 }}>
@@ -254,11 +266,11 @@ export default function DoctorDashboard({
                       <TableCell sx={{ py: 1.5 }}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, color: 'text.secondary' }}>
                           <CalendarIcon sx={{ fontSize: 13 }} />
-                          <Typography variant="body2">{p.last_evaluated ?? '—'}</Typography>
+                          <Typography variant="body2">{p.last_prediction?.prediction_date ?? '—'}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell sx={{ py: 1.5 }} align="center"><Chip label={riskConfig.label} color={riskConfig.color} size="small" variant="outlined" sx={{ fontWeight: 'bold', fontSize: '10px', height: 20 }} /></TableCell>
-                      <TableCell sx={{ py: 1.5 }} align="center"><Chip label={p.status ?? 'Pending Interpretation'} color={statusColor} size="small" sx={{ fontWeight: 'bold', fontSize: '9px', height: 18 }} /></TableCell>
+                      <TableCell sx={{ py: 1.5 }} align="center"><Chip label={status} color={statusColor} size="small" sx={{ fontWeight: 'bold', fontSize: '9px', height: 18 }} /></TableCell>
                       <TableCell sx={{ py: 1.5 }} align="right">
                         <Button variant="outlined" size="small" onClick={() => onSelectPatient(p.id)} endIcon={<ArrowRightIcon fontSize="inherit" />} id={`btn-review-file-${p.id}`} sx={{ fontSize: '10px', py: 0.25, px: 1, fontWeight: 'bold', color: 'text.secondary', borderColor: 'divider', '&:hover': { bgcolor: 'primary.main', color: '#ffffff', borderColor: 'primary.main' } }}>Ver prontuário</Button>
                       </TableCell>

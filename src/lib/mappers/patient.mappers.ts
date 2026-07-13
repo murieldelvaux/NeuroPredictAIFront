@@ -2,8 +2,6 @@
 // Use API types directly; minimal transformation only where needed
 
 import type {
-  PatientListItem,
-  PatientDetailResponse,
   PatientSex,
 } from '../../types';
 

@@ -37,24 +37,12 @@ export type PatientResponse = {
   id: string;
   name: string;
   age: number;
-  sex: 'M' | 'F';
+  sex: 'M' | 'F' | 'Male' | 'Female';
   mrn?: string | null;
   date_of_birth?: string | null;
   created_at: string;
   last_prediction?: PatientLastPrediction | null;
   clinical_data?: ClinicalDataPayload | null;
-};
-
-export type PatientListItem = {
-  id: string;
-  name: string;
-  age: number;
-  sex: 'M' | 'F';
-  mrn?: string | null;
-  risk_score?: number | null;
-  risk_category?: string | null;
-  last_evaluated?: string | null;
-  status?: string | null;
 };
 
 export type PatientDemographicsResponse = {

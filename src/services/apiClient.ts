@@ -1,6 +1,5 @@
 import type {
   HealthResponse,
-  PatientListItem,
   PatientDetailResponse,
   PatientCreatePayload,
   PredictPayload,
@@ -44,8 +43,8 @@ export const healthService = {
 
 export const patientApiService = {
   /** GET /patients — returns list of all patients */
-  getPatients(): Promise<PatientListItem[]> {
-    return apiFetch<PatientListItem[]>('/patients');
+  getPatients(): Promise<PatientResponse[]> {
+    return apiFetch<PatientResponse[]>('/patients');
   },
 
   /** GET /patients/{patient_id} — returns full patient detail */

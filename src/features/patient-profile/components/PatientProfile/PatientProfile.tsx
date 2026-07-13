@@ -60,7 +60,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
   if (!patientRecord || !patient) {
     return null;
   }
-
+console.log("history:", history, patientRecord);
   const displayName = demographics?.name ?? patient.name;
   const displayMrn = demographics?.mrn ?? patient.mrn;
   const displayGender = demographics?.sex === 'F' ? 'Feminino' : demographics?.sex === 'M' ? 'Masculino' : patient.sex === 'F' ? 'Feminino' : patient.sex === 'M' ? 'Masculino' : 'Outro';
