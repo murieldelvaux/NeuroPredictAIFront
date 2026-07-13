@@ -13,6 +13,9 @@ export type ClinicalDataPayload = {
   cdr?: number | null;
   cdrtot?: number | null;
   comorbidities: string[];
+  biomarkers: string[];
+  medications: string[];
+  symptoms: string[];
   family_history?: boolean | null;
   education_years?: number | null;
 };
@@ -117,10 +120,5 @@ export type PatientResponseWithClinical = PatientResponse & {
 
 export type PatientDetailResponse = {
   patient: PatientResponseWithClinical;
-  demographics?: PatientDemographicsResponse | null;
-  history?: PatientHistoryResponse | null;
-  exam?: PatientExamResponse | null;
-  imaging_analysis?: PatientImagingAnalysisResponse | null;
-  ai_analysis?: PatientAIAnalysisResponse | null;
   predictions?: Record<string, unknown>[];
 };
