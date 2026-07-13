@@ -1,17 +1,7 @@
 import { useState } from 'react';
-import type {
-  PatientDemographics,
-  ClinicalHistory,
-  ImagingExam,
-  ClinicalDataPayload,
-} from '../types';
+import type { PatientCreatePayload, PatientSex } from '../types';
 
-type WorkflowOnSave = (data: {
-  demographics: Omit<PatientDemographics, 'id'>;
-  history: ClinicalHistory;
-  cognitive: ClinicalDataPayload;
-  imaging?: Pick<ImagingExam, 'scanType' | 'scanDate' | 'radiologistNotes'> & { fileUploaded?: string };
-}) => void;
+type WorkflowOnSave = (payload: PatientCreatePayload) => void;
 
 export function useClinicalWorkflow(onSave: WorkflowOnSave) {
   const [step, setStep] = useState<number>(1);
@@ -20,7 +10,7 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [age, setAge] = useState<number>(70);
-  const [sex, setSex] = useState<PatientDemographics['sex']>('M');
+  const [sex, setSex] = useState<PatientSex>('M');
   const [date_of_birth, setDateOfBirth] = useState('1956-06-20');
   const [mrn] = useState<string>(() => `MRN-${Math.floor(10000 + Math.random() * 90000)}-${Math.floor(10 + Math.random() * 89)}Z`);
   const [educationYears, setEducationYears] = useState<number>(14);
@@ -46,7 +36,7 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
   const [cdrtotScore, setCdrtotScore] = useState<number>(0.5);
 
   // STEP 4 State: Imaging Details
-  const [scanType, setScanType] = useState<ImagingExam['scanType']>('MRI 3T');
+  const [scanType, setScanType] = useState<string>('MRI 3T');
   const [scanDate, setScanDate] = useState('2026-06-10');
   const [radiologistNotes, setRadiologistNotes] = useState('Subcortical vascular parameters are constant. No distinct cortical anomalies reported.');
   const [customFileUploaded, setCustomFileUploaded] = useState<string | null>(null);
@@ -126,26 +116,11 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
 
   const submitWorkflow = () => {
     onSave({
-      demographics: {
-        name: `${firstName} ${lastName}`.trim() || "Anonymous Patient",
-        age,
-        sex,
-        mrn,
-        date_of_birth,
-        phone: "(555) 019-2091",
-        email: `${firstName.toLocaleLowerCase()}.${lastName.toLocaleLowerCase()}@healthops.org`,
-      },
-      history: {
-        symptoms: symptomsList,
-        familyHistory: {
-          alzheimersRelation: hasFamilyHistory ? [familyRelation] : [],
-          dementiaCount: hasFamilyHistory ? dementiaCount : 0,
-        },
-        riskFactors: selectedRiskFactors,
-        comorbidities: selectedComorbidities,
-        medications: medicationsList,
-      },
-      cognitive: {
+      name: `${firstName} ${lastName}`.trim() || 'Anonymous Patient',
+      age,
+      sex,
+      date_of_birth,
+      clinical_data: {
         mmse: mmseScore,
         moca: mocaScore,
         cdr: cdrScore,
@@ -154,12 +129,7 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
         family_history: hasFamilyHistory,
         education_years: educationYears,
       },
-      imaging: {
-        scanType,
-        scanDate,
-        radiologistNotes,
-        fileUploaded: customFileUploaded || undefined,
-      },
+      education_years: educationYears,
     });
   };
 

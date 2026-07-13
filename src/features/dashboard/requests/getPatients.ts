@@ -1,5 +1,5 @@
 import { neuroPredictServiceFetch } from '@/src/clients/neuroPredictServiceFetch';
-import { Patient } from '@/src/types';
+import type { PatientResponse } from '@/src/types';
 
-export const getPatients = (): Promise<Patient[]> =>
-  neuroPredictServiceFetch<Patient[]>('/patients');
+export const getPatients = (): Promise<PatientResponse[]> =>
+  neuroPredictServiceFetch<PatientResponse[]>('/patients');

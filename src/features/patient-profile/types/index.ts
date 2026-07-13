@@ -1,6 +1,6 @@
-import { PatientRecord } from '../../../types';
+import type { PatientDetailResponse } from '../../../types';
 
 export interface PatientProfileProps {
-  patientRecord: PatientRecord;
+  patientRecord: PatientDetailResponse | null;
   onBack: () => void;
 }

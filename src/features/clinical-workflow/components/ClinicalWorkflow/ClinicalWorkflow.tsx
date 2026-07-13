@@ -41,6 +41,7 @@ import {
 } from '@mui/icons-material';
 import { ClinicalWorkflowProps } from '../../types';
 import { useClinicalWorkflow } from '@/src/hooks/useClinicalWorkflow';
+import type { PatientSex } from '../../../types';
 
 export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: ClinicalWorkflowProps) {
   const theme = useTheme();
@@ -211,11 +212,10 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
                 id="select-gender"
                 value={sex}
                 label="SEXO BIOLÓGICO"
-                onChange={(e: any) => setSex(e.target.value)}
+                onChange={(e) => setSex(e.target.value as PatientSex)}
               >
-                <MenuItem value="Male">Masculino</MenuItem>
-                <MenuItem value="Female">Feminino</MenuItem>
-                <MenuItem value="Other">Outro</MenuItem>
+                <MenuItem value="M">Masculino</MenuItem>
+                <MenuItem value="F">Feminino</MenuItem>
               </Select>
             </FormControl>
             <TextField 

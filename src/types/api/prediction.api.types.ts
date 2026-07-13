@@ -8,6 +8,7 @@ export type FeatureImportanceResponse = {
 
 export type PredictionResponse = {
   patient_id: string;
+  prediction_date: string;
   risk_score: number;           // 0.0 – 1.0
   classification: string;       // 'CN' | 'MCI' | 'AD'
   confidence: number;           // 0.0 – 1.0

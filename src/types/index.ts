@@ -1,15 +1,20 @@
 // Barrel de re-exports — importe sempre daqui
+// API types only - no UI-only abstractions
 
-export type { Patient, PatientDemographics, ClinicalHistory, CognitiveEvaluation,
-  ImagingExam, ImagingAnalysisResult, PatientRecord, PatientSex, PatientStatus,
-  RiskCategory, CognitiveScoreRange } from './patient.types';
-
-export type { AIAnalysisResult, FeatureImportance } from './prediction.types';
-
+export type { PatientSex } from './patient.types';
 export type { MedicalWorkflowSession, WorkflowStep } from './workflow.types';
-
-export type { PatientCreatePayload, ClinicalDataPayload, PatientResponse,
-  PatientListItem, PatientDetailResponse, PatientLastPrediction,
-  HealthResponse } from './api/patient.api.types';
-
+export type {
+  PatientCreatePayload,
+  ClinicalDataPayload,
+  PatientResponse,
+  PatientDetailResponse,
+  PatientLastPrediction,
+  PatientDemographicsResponse,
+  PatientHistoryResponse,
+  PatientExamResponse,
+  PatientImagingAnalysisResponse,
+  PatientAIAnalysisResponse,
+  HealthResponse,
+  PatientResponseWithClinical,
+} from './api/patient.api.types';
 export type { PredictionResponse, PredictPayload, FeatureImportanceResponse } from './api/prediction.api.types';
