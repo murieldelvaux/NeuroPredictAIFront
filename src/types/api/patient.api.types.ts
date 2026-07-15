@@ -16,7 +16,7 @@ export type ClinicalDataPayload = {
   biomarkers: string[];
   medications: string[];
   symptoms: string[];
-  exam: File,
+  mri_file: File,
   family_history?: boolean | null;
   education_years?: number | null;
 };

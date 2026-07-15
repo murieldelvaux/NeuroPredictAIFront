@@ -128,6 +128,10 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
         comorbidities: selectedComorbidities,
         family_history: hasFamilyHistory,
         education_years: educationYears,
+        biomarkers: selectedRiskFactors,
+        medications: medicationsList,
+        symptoms: symptomsList,
+        mri_file: new File([""], "placeholder_scan.dcm", { type: "application/dicom" }),
       },
       education_years: educationYears,
     });

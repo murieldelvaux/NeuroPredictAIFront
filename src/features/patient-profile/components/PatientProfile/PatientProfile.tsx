@@ -683,7 +683,7 @@ console.log("history:", patientRecord);
                                 await uploadMriAndPredict({
                                     patientId: patient.id,
                                     file,
-                                    age: demographics?.age ?? patient.age,
+                                    age: patient.age,
                                     mmse: displayMmse,
                                     cdr: displayCdr,
                                     cdrtot: displayCdr,

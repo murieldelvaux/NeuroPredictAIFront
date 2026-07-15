@@ -21,6 +21,7 @@ export const predict = async (payload: PredictPayload): Promise<PredictionRespon
   if (payload.mmse != null)   form.append('mmse',   String(payload.mmse));
   if (payload.cdr != null)    form.append('cdr',    String(payload.cdr));
   if (payload.cdrtot != null) form.append('cdrtot', String(payload.cdrtot));
+  if (payload.prediction_date != null) form.append('prediction_date', payload.prediction_date);
 
   const res = await fetch(`${BASE_URL}/predict`, {
     method: 'POST',
