@@ -41,7 +41,7 @@ import {
 } from '@mui/icons-material';
 import { ClinicalWorkflowProps } from '../../types';
 import { useClinicalWorkflow } from '@/src/hooks/useClinicalWorkflow';
-import type { PatientSex } from '../../../types';
+import type { PatientSex } from '../../../../types';
 
 export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: ClinicalWorkflowProps) {
   const theme = useTheme();
@@ -538,7 +538,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
                 accept=".nii,.nii.gz,.dcm"
                 onChange={(e) => {
                   if (e.target.files && e.target.files[0]) {
-                    setCustomFileUploaded(e.target.files[0].name);
+                    setCustomFileUploaded(e.target.files[0]);
                   }
                 }}
                 style={{
@@ -549,7 +549,7 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
                 }}
               />
               <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                {customFileUploaded ? `✓ Arquivo anexado: ${customFileUploaded}` : "Buscar conjuntos de voxels de ressonância (opcional)"}
+                {customFileUploaded ? `✓ Arquivo anexado: ${customFileUploaded.name}` : "Buscar conjuntos de voxels de ressonância (opcional)"}
               </Typography>
               <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5, display: 'block' }}>
                 Aceita pastas DICOM e formatos estruturais NIfTI (.nii.gz)

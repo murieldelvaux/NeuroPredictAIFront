@@ -46,6 +46,7 @@ import {
 } from 'recharts';
 import { PatientProfileProps } from '../../types';
 import { usePatientProfile } from '../../hooks/usePatientProfile';
+import type { PatientSex } from '../../../../types';
 
 export default function PatientProfile({ patientRecord, onBack }: PatientProfileProps) {
   const theme = useTheme();
@@ -67,6 +68,7 @@ console.log("history:", patientRecord);
   const displayMmse = cognitive?.mmse ?? 0;
   const displayMoca = cognitive?.moca ?? 0;
   const displayCdr = cognitive?.cdr ?? 0;
+  const displayMriFile = cognitive?.mri_file;
 
   // Utilize logic-less extraction hook
   const {
@@ -348,6 +350,15 @@ console.log("history:", patientRecord);
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>HISTÓRICO ESCOLAR</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayEducation} anos de estudo</Typography>
                 </Box>
+                {displayMriFile && (
+                  <Box sx={{ gridColumn: { xs: '1 / -1' } }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>ARQUIVO MRI ENVIADO</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayMriFile.filename}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                      {displayMriFile.content_type} • {displayMriFile.size} bytes
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             </CardContent>
           </Card>

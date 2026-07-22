@@ -6,6 +6,7 @@ export type { MedicalWorkflowSession, WorkflowStep } from './workflow.types';
 export type {
   PatientCreatePayload,
   ClinicalDataPayload,
+  MRIFileMetadata,
   PatientResponse,
   PatientDetailResponse,
   PatientLastPrediction,

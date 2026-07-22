@@ -58,8 +58,8 @@ function WorkspaceRoot({
 
   console.log("---> Active Detail:", activeDetail);
   console.log("---> Patients:", patients);
-  const handleCreatePatientSubmit = (payload: PatientCreatePayload) => {
-    createPatientMutation.mutate(payload, {
+  const handleCreatePatientSubmit = (payload: PatientCreatePayload, mriFile?: File | null) => {
+    createPatientMutation.mutate({ payload, mriFile }, {
       onSuccess: (newPatient) => {
         // Navigate to profile immediately after creation
         setSelectedPatientId(newPatient.id);

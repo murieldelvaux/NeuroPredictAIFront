@@ -1,6 +1,7 @@
 export type {
   PatientCreatePayload,
   ClinicalDataPayload,
+  MRIFileMetadata,
   PatientResponse,
   PatientDetailResponse,
   PatientLastPrediction,
