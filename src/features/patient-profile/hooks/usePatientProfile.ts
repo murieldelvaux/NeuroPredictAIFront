@@ -40,6 +40,7 @@ export function usePatientProfile() {
         mmse,
         cdr,
         cdrtot,
+        prediction_date: new Date().toISOString().split("T")[0], // deixar no formato dd-mm-yyyy
       },
       {
         onSuccess: (response) => {

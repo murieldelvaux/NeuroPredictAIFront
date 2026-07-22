@@ -7,14 +7,24 @@ export type HealthResponse = {
   version: string;
 };
 
+export type MRIFileMetadata = {
+  filename: string;
+  content_type: string;
+  size: number;
+};
+
 export type ClinicalDataPayload = {
   mmse?: number | null;
   moca?: number | null;
   cdr?: number | null;
   cdrtot?: number | null;
   comorbidities: string[];
+  biomarkers: string[];
+  symptoms: string[];
+  medications: string[];
   family_history?: boolean | null;
   education_years?: number | null;
+  mri_file?: MRIFileMetadata | null;
 };
 
 export type PatientCreatePayload = {
@@ -117,8 +127,6 @@ export type PatientResponseWithClinical = PatientResponse & {
 
 export type PatientDetailResponse = {
   patient: PatientResponseWithClinical;
-  demographics?: PatientDemographicsResponse | null;
-  history?: PatientHistoryResponse | null;
   exam?: PatientExamResponse | null;
   imaging_analysis?: PatientImagingAnalysisResponse | null;
   ai_analysis?: PatientAIAnalysisResponse | null;

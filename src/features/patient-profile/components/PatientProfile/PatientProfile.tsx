@@ -46,13 +46,12 @@ import {
 } from 'recharts';
 import { PatientProfileProps } from '../../types';
 import { usePatientProfile } from '../../hooks/usePatientProfile';
+import type { PatientSex } from '../../../../types';
 
 export default function PatientProfile({ patientRecord, onBack }: PatientProfileProps) {
   const theme = useTheme();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const patient = patientRecord?.patient;
-  const demographics = patientRecord?.demographics;
-  const history = patientRecord?.history;
   const cognitive = patientRecord?.patient?.clinical_data;
   const exam = patientRecord?.exam;
   const imagingAnalysis = patientRecord?.imaging_analysis;
@@ -60,20 +59,17 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
   if (!patientRecord || !patient) {
     return null;
   }
-console.log("history:", history, patientRecord);
-  const displayName = demographics?.name ?? patient.name;
-  const displayMrn = demographics?.mrn ?? patient.mrn;
-  const displayGender = demographics?.sex === 'F' ? 'Feminino' : demographics?.sex === 'M' ? 'Masculino' : patient.sex === 'F' ? 'Feminino' : patient.sex === 'M' ? 'Masculino' : 'Outro';
-  const displayDob = demographics?.date_of_birth ?? '—';
-  const displayAge = demographics?.age ?? patient.age;
+console.log("history:", patientRecord);
+  const displayName = patientRecord?.patient?.name ?? patient.name;
+  const displayMrn = patientRecord?.patient?.mrn ?? patient.mrn;
+  const displayDob = patientRecord?.patient?.date_of_birth ?? '—';
+  const displayAge = patientRecord?.patient?.age ?? patient.age;
   const displayEducation = cognitive?.education_years ?? 0;
-  const displayPhone = demographics?.phone ?? '—';
-  const displayEmail = demographics?.email ?? '—';
   const displayMmse = cognitive?.mmse ?? 0;
   const displayMoca = cognitive?.moca ?? 0;
   const displayCdr = cognitive?.cdr ?? 0;
+  const displayMriFile = cognitive?.mri_file;
 
-  console.log("---> PatientProfile Rendered with patientRecord:", patientRecord);
   // Utilize logic-less extraction hook
   const {
     activeTab,
@@ -87,9 +83,10 @@ console.log("history:", history, patientRecord);
     predictedAiAnalysis,
     uploadError,
     uploadMriAndPredict,    
-    } = usePatientProfile();
-    
+  } = usePatientProfile();
+  
   const mergedAiAnalysis = predictedAiAnalysis;
+  console.log("---> PatientProfile Rendered with patientRecord:", patientRecord, mergedAiAnalysis);
 
   // Cognitive Score evolution helper for charts
   const historySeries: Array<{ name: string; MMSE?: number; MoCA?: number; CDR?: number }> = [];
@@ -339,7 +336,7 @@ console.log("history:", history, patientRecord);
               <Box sx={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 2, fontSize: '12px' }} id="patient-metrics-demographic-list">
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>SEXO</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayGender}</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{patientRecord?.patient?.sex}</Typography>
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>IDADE</Typography>
@@ -353,14 +350,15 @@ console.log("history:", history, patientRecord);
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>HISTÓRICO ESCOLAR</Typography>
                   <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayEducation} anos de estudo</Typography>
                 </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>TELEFONE</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace' }}>{displayPhone}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>E-MAIL DO SISTEMA</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '11px', fontFamily: 'monospace', wordBreak: 'break-all' }}>{displayEmail}</Typography>
-                </Box>
+                {displayMriFile && (
+                  <Box sx={{ gridColumn: { xs: '1 / -1' } }}>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>ARQUIVO MRI ENVIADO</Typography>
+                    <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayMriFile.filename}</Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                      {displayMriFile.content_type} • {displayMriFile.size} bytes
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             </CardContent>
           </Card>
@@ -377,7 +375,7 @@ console.log("history:", history, patientRecord);
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Sintomas atuais</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="symptom-tag-chips-pile">
-                    {(history?.symptoms ?? history?.active_presenting_symptoms ?? []).map((s, idx) => (
+                    {(patientRecord?.patient?.clinical_data?.symptoms ?? patientRecord?.patient?.clinical_data?.symptoms ?? []).map((s, idx) => (
                       <Chip key={idx} label={s} size="small" variant="filled" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
                     ))}
                   </Box>
@@ -386,11 +384,11 @@ console.log("history:", history, patientRecord);
                 {/* Hereditary family context */}
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Histórico familiar de demência</Typography>
-                  {history?.dementia_count && history.dementia_count > 0 ? (
+                  {patientRecord?.patient?.clinical_data?.family_history ? (
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} id="family-relation-line">
                       <DnaIcon sx={{ fontSize: 13, color: 'primary.main' }} />
                       <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        {history?.dementia_count} parentes diagnosticados ({history?.alzheimers_relation?.join(', ')})
+                        Possuí histórico familiar de demência (Alzheimer ou outras formas) em parentes de primeiro grau
                       </Typography>
                     </Box>
                   ) : (
@@ -402,7 +400,7 @@ console.log("history:", history, patientRecord);
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Marcadores ApoE e fatores de risco</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="risks-tag-chips-pile">
-                    {(history?.risk_factors ?? history?.apoe_biomarkers_risk_vectors ?? []).map((r, idx) => (
+                    {(patientRecord?.patient?.clinical_data?.biomarkers ?? patientRecord?.patient?.clinical_data?.biomarkers ?? []).map((r, idx) => (
                       <Chip key={idx} label={r} size="small" variant="outlined" color="error" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
                     ))}
                   </Box>
@@ -412,7 +410,7 @@ console.log("history:", history, patientRecord);
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Comorbidades registradas</Typography>
                   <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="comorbidities-tag-chips-pile">
-                    {(history?.comorbidities ?? history?.registered_comorbidities ?? []).map((c, idx) => (
+                    {(patientRecord?.patient?.clinical_data?.comorbidities ?? patientRecord?.patient?.clinical_data?.comorbidities ?? []).map((c, idx) => (
                       <Chip key={idx} label={c} size="small" variant="outlined" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
                     ))}
                   </Box>
@@ -422,7 +420,7 @@ console.log("history:", history, patientRecord);
                 <Box>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Medicamentos em uso</Typography>
                   <Box sx={{ pl: 1, borderLeft: 2, borderColor: 'primary.light' }} id="medications-review-list">
-                    {(history?.medications ?? history?.admitted_medications ?? []).map((m, idx) => (
+                    {(patientRecord?.patient?.clinical_data?.medications ?? patientRecord?.patient?.clinical_data?.medications ?? []).map((m, idx) => (
                       <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'bold', color: 'text.secondary' }}>
                         • {m}
                       </Typography>
@@ -696,7 +694,7 @@ console.log("history:", history, patientRecord);
                                 await uploadMriAndPredict({
                                     patientId: patient.id,
                                     file,
-                                    age: demographics?.age ?? patient.age,
+                                    age: patient.age,
                                     mmse: displayMmse,
                                     cdr: displayCdr,
                                     cdrtot: displayCdr,

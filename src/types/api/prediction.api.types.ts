@@ -24,4 +24,5 @@ export type PredictPayload = {
   mmse?: number | null;
   cdr?: number | null;
   cdrtot?: number | null;
+  prediction_date: string;
 };

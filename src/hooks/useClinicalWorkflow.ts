@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { PatientCreatePayload, PatientSex } from '../types';
 
-type WorkflowOnSave = (payload: PatientCreatePayload) => void;
+type WorkflowOnSave = (payload: PatientCreatePayload, mriFile?: File | null) => void;
 
 export function useClinicalWorkflow(onSave: WorkflowOnSave) {
   const [step, setStep] = useState<number>(1);
@@ -39,7 +39,7 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
   const [scanType, setScanType] = useState<string>('MRI 3T');
   const [scanDate, setScanDate] = useState('2026-06-10');
   const [radiologistNotes, setRadiologistNotes] = useState('Subcortical vascular parameters are constant. No distinct cortical anomalies reported.');
-  const [customFileUploaded, setCustomFileUploaded] = useState<string | null>(null);
+  const [customFileUploaded, setCustomFileUploaded] = useState<File | null>(null);
 
   // STEP 5 State: AI Analysis Simulation & Terminal logs
   const [simulationPercentage, setSimulationPercentage] = useState<number>(0);
@@ -128,9 +128,12 @@ export function useClinicalWorkflow(onSave: WorkflowOnSave) {
         comorbidities: selectedComorbidities,
         family_history: hasFamilyHistory,
         education_years: educationYears,
+        biomarkers: selectedRiskFactors,
+        medications: medicationsList,
+        symptoms: symptomsList,
       },
       education_years: educationYears,
-    });
+    }, customFileUploaded);
   };
 
   return {
