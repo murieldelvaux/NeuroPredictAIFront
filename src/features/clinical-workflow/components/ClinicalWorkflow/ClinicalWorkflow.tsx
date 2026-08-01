@@ -43,7 +43,7 @@ import { ClinicalWorkflowProps } from '../../types';
 import { useClinicalWorkflow } from '@/src/hooks/useClinicalWorkflow';
 import type { PatientSex } from '../../../../types';
 
-export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: ClinicalWorkflowProps) {
+export default function ClinicalWorkflow({ onComplete, onError, onCancel }: ClinicalWorkflowProps) {
   const theme = useTheme();
 
   // Load state and logic out of presenter
@@ -94,9 +94,11 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
     simulationPercentage,
     simulationRunning,
     terminalLogs,
+    isWorkflowBusy,
+    handleNextStep,
     runAIPipeline,
     submitWorkflow,
-  } = useClinicalWorkflow(onSave);
+  } = useClinicalWorkflow({ onComplete, onError });
 
   // Labels & Icons for stepper
   const stepsMetadata = [
@@ -730,9 +732,10 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
           <Button 
             variant="contained" 
             color="secondary" 
-            onClick={() => setStep(step + 1)}
+            onClick={handleNextStep}
             endIcon={<ArrowRightIcon />}
             id="btn-step-next"
+            disabled={isWorkflowBusy}
             sx={{ fontWeight: 'bold' }}
           >
             Próxima etapa
@@ -741,12 +744,12 @@ export default function ClinicalWorkflow({ onSave, isSaving, onCancel }: Clinica
           <Button 
             variant="contained" 
             color="success" 
-            disabled={isSaving}
+            disabled={isWorkflowBusy}
             onClick={submitWorkflow}
             id="btn-save-evaluation"
             sx={{ fontWeight: 'black', color: '#ffffff' }}
           >
-            {isSaving ? "Sincronizando workspace..." : "Salvar e registrar paciente"}
+            Concluir
           </Button>
         ) : <Box />}
       </Box>

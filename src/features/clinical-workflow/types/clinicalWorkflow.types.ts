@@ -1,7 +1,5 @@
-import type { PatientCreatePayload } from '../../../types';
-
 export type ClinicalWorkflowProps = {
-  onSave: (payload: PatientCreatePayload, mriFile?: File | null) => void;
-  isSaving: boolean;
+  onComplete: (patientId: string) => void;
+  onError: (message: string) => void;
   onCancel: () => void;
 };

@@ -23,10 +23,8 @@ import DoctorDashboard from './features/dashboard/components/DoctorDashboard/Doc
 import PatientProfile from './features/patient-profile/components/PatientProfile/PatientProfile';
 import ClinicalWorkflow from './features/clinical-workflow/components/ClinicalWorkflow/ClinicalWorkflow';
 
-import { useCreatePatient } from './features/clinical-workflow/react-queries/useCreatePatient';
 import { useGetPatients } from './features/dashboard/react-queries/useGetPatients';
 import { useGetPatient } from './features/patient-profile/react-queries/useGetPatient';
-import type { PatientCreatePayload } from './types';
 
 function WorkspaceRoot({
   isDarkMode,
@@ -48,31 +46,20 @@ function WorkspaceRoot({
   const { data: patients = [], isLoading: listLoading } = useGetPatients();
   // FIX: pass empty string when null so the query is disabled (enabled: !!id)
   const { data: activeDetail, isLoading: detailLoading } = useGetPatient(selectedPatientId ?? '');
-  const createPatientMutation = useCreatePatient();
-
   // FIX: set selectedPatientId then navigate to profile
   const handleSelectPatient = (id: string) => {
     setSelectedPatientId(id);
     setActiveView('profile');
   };
 
-  console.log("---> Active Detail:", activeDetail);
-  console.log("---> Patients:", patients);
-  const handleCreatePatientSubmit = (payload: PatientCreatePayload, mriFile?: File | null) => {
-    createPatientMutation.mutate({ payload, mriFile }, {
-      onSuccess: (newPatient) => {
-        // Navigate to profile immediately after creation
-        setSelectedPatientId(newPatient.id);
-        setActiveView('profile');
-      },
-      onError: (err: any) => {
-        setToastMessage({
-          text: `Erro de calibração durante a aquisição: ${err.message}`,
-          type: 'error',
-        });
-        setTimeout(() => setToastMessage(null), 5000);
-      },
-    });
+  const handleWorkflowComplete = (patientId: string) => {
+    setSelectedPatientId(patientId);
+    setActiveView('profile');
+  };
+
+  const handleWorkflowError = (message: string) => {
+    setToastMessage({ text: message, type: 'error' });
+    setTimeout(() => setToastMessage(null), 5000);
   };
 
   return (
@@ -114,8 +101,8 @@ function WorkspaceRoot({
 
         {activeView === 'workflow' && (
           <ClinicalWorkflow
-            onSave={handleCreatePatientSubmit}
-            isSaving={createPatientMutation.isPending}
+            onComplete={handleWorkflowComplete}
+            onError={handleWorkflowError}
             onCancel={() => {
               setToastMessage({ text: 'Arquivo provisório de registro clínico descartado.', type: 'info' });
               setTimeout(() => setToastMessage(null), 3000);
