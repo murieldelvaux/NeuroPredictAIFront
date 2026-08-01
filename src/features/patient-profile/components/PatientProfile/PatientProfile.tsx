@@ -1,297 +1,101 @@
 /**
  * NeuroPredict AI - Clinical Patient Profile Analyzer styled with Material-UI
  */
-import React, { useRef } from 'react';
-import { 
-  Box, 
-  Card, 
-  CardContent, 
-  Typography, 
-  Button, 
-  Divider, 
-  Chip, 
-  Tabs, 
-  Tab, 
-  Slider, 
-  Switch, 
-  FormControlLabel, 
-  Paper, 
-  LinearProgress, 
-  CircularProgress,
+import React, { useMemo } from 'react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Button,
+  Divider,
+  Chip,
+  Tabs,
+  Tab,
+  Paper,
   useTheme,
-  Alert,
 } from '@mui/material';
-import { 
-  ArrowBack as ArrowLeftIcon, 
-  Fingerprint as DnaIcon, 
-  Assignment as FileTextIcon, 
-  Psychology as BrainIcon, 
-  CloudUpload as UploadIcon, 
-  ContactPage as UserIcon, 
-  AutoFixHigh as CpuIcon 
+import {
+  ArrowBack as ArrowLeftIcon,
+  Fingerprint as DnaIcon,
+  Assignment as FileTextIcon,
+  Psychology as BrainIcon,
+  ContactPage as UserIcon,
+  AutoFixHigh as CpuIcon,
 } from '@mui/icons-material';
-import { 
-  ResponsiveContainer, 
-  LineChart, 
-  Line, 
-  BarChart, 
-  Bar, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  Legend, 
-  ReferenceLine,
-  Cell
-} from 'recharts';
 import { PatientProfileProps } from '../../types';
 import { usePatientProfile } from '../../hooks/usePatientProfile';
-import type { PatientSex } from '../../../../types';
+import ExamViewer from '../../../../components/ExamViewer/ExamViewer';
 
 export default function PatientProfile({ patientRecord, onBack }: PatientProfileProps) {
   const theme = useTheme();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000';
   const patient = patientRecord?.patient;
   const cognitive = patientRecord?.patient?.clinical_data;
   const exam = patientRecord?.exam;
   const imagingAnalysis = patientRecord?.imaging_analysis;
+  const aiAnalysis = (patientRecord.ai_analysis ?? null) as any;
+
+  const { activeTab, setActiveTab, predictedAiAnalysis } = usePatientProfile();
 
   if (!patientRecord || !patient) {
     return null;
   }
-console.log("history:", patientRecord);
-  const displayName = patientRecord?.patient?.name ?? patient.name;
-  const displayMrn = patientRecord?.patient?.mrn ?? patient.mrn;
-  const displayDob = patientRecord?.patient?.date_of_birth ?? '—';
-  const displayAge = patientRecord?.patient?.age ?? patient.age;
+
+  const displayName = patient.name;
+  const displayMrn = patient.mrn ?? '—';
+  const displayDob = patient.date_of_birth ?? '—';
+  const displayAge = patient.age;
   const displayEducation = cognitive?.education_years ?? 0;
   const displayMmse = cognitive?.mmse ?? 0;
   const displayMoca = cognitive?.moca ?? 0;
   const displayCdr = cognitive?.cdr ?? 0;
   const displayMriFile = cognitive?.mri_file;
+  const mergedAiAnalysis = (predictedAiAnalysis ?? aiAnalysis) as any;
 
-  // Utilize logic-less extraction hook
-  const {
-    activeTab,
-    setActiveTab,
-    sliceDepth,
-    setSliceDepth,
-    showHeatmap,
-    setShowHeatmap,
-    mriUploading,
-    uploadedFile,
-    predictedAiAnalysis,
-    uploadError,
-    uploadMriAndPredict,    
-  } = usePatientProfile();
-  
-  const mergedAiAnalysis = predictedAiAnalysis;
-  console.log("---> PatientProfile Rendered with patientRecord:", patientRecord, mergedAiAnalysis);
+  const initialExamSources = useMemo(() => {
+    if (!displayMriFile?.filename) {
+      return [];
+    }
 
-  // Cognitive Score evolution helper for charts
-  const historySeries: Array<{ name: string; MMSE?: number; MoCA?: number; CDR?: number }> = [];
+    const filename = displayMriFile.filename;
+    const urls = filename.startsWith('http://') || filename.startsWith('https://')
+      ? [filename]
+      : [
+          `${apiBaseUrl}/patients/${patient.id}/mri-file`,
+          `${apiBaseUrl}/patients/${patient.id}/mri`,
+          `${apiBaseUrl}/files/${encodeURIComponent(filename)}`,
+          `${apiBaseUrl}/media/${encodeURIComponent(filename)}`,
+          `${apiBaseUrl}/uploads/${encodeURIComponent(filename)}`,
+        ];
 
-  // SHAP explanatory factor series helper for charts
-  const shapData = (mergedAiAnalysis?.explanation ?? []).map((item) => ({
-    name: item.feature,
-    value: Math.round((item.impact ?? 0) * 100),
-    category: item.direction === 'risk' ? 'risk' : 'protective',
-  }));
-
-  // MRI scan simulation visualizer
-  const renderInteractiveScan = () => {
-    // Generate a beautiful, clinical circular scan slice depending on slice depth and heatmap toggles
-    const radius = 60 + sliceDepth * 0.4; // dynamic size based on slider
-    const contrastValue = 0.8 + (sliceDepth / 200);
-
-    return (
-      <Box 
-        sx={{ 
-          position: 'relative', 
-          width: '100%', 
-          aspectRatio: '1', 
-          maxWidth: 320, 
-          mx: 'auto', 
-          bgcolor: '#020617', 
-          borderRadius: 4, 
-          border: 1, 
-          borderColor: 'divider', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center', 
-          overflow: 'hidden', 
-          boxShadow: 'inset 0 0 40px rgba(0,0,0,0.8)' 
-        }}
-        id="mri-interactive-console"
-      >
-        {/* Alignment concentric grids */}
-        <Box sx={{ position: 'absolute', inset: 8, border: '1px solid rgba(255,255,255,0.03)', borderRadius: '50%', pointerEvents: 'none' }} />
-        <Box sx={{ position: 'absolute', inset: 32, border: '1px dashed rgba(255,255,255,0.02)', borderRadius: '50%', pointerEvents: 'none' }} />
-        <Box sx={{ position: 'absolute', inset: 64, border: '1px solid rgba(255,255,255,0.01)', borderRadius: '50%', pointerEvents: 'none' }} />
-        <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', opacity: 0.15 }}>
-          <Box sx={{ width: '1px', height: '100%', bgcolor: 'text.secondary' }} />
-          <Box sx={{ height: '1px', width: '100%', bgcolor: 'text.secondary' }} />
-        </Box>
-
-        {/* Digital display overlays */}
-        <Typography 
-          variant="caption" 
-          sx={{ position: 'absolute', top: 12, left: 16, fontFamily: 'monospace', fontSize: '9px', color: '#14b8a6', fontWeight: 'bold' }}
-          id="mri-param-left"
-        >
-          FLAIR_3D_CORONAL
-        </Typography>
-        <Typography 
-          variant="caption" 
-          sx={{ position: 'absolute', top: 12, right: 16, fontFamily: 'monospace', fontSize: '9px', color: '#10b981' }}
-          id="mri-param-right"
-        >
-          SLICE_POS_Z: {sliceDepth}%
-        </Typography>
-        <Typography variant="caption" sx={{ position: 'absolute', bottom: 12, left: 16, fontFamily: 'monospace', fontSize: '9px', color: 'text.secondary', opacity: 0.6 }}>
-          CON: {contrastValue.toFixed(2)}x
-        </Typography>
-        <Typography variant="caption" sx={{ position: 'absolute', bottom: 12, right: 16, fontFamily: 'monospace', fontSize: '9px', color: 'text.secondary', opacity: 0.6 }}>
-          VOX: 0.9 x 0.9 x 0.9 mm
-        </Typography>
-
-        {/* Brain structures vectors */}
-        <Box 
-          sx={{
-            position: 'relative',
-            borderRadius: '50%',
-            bgcolor: 'rgba(30,41,59,0.1)',
-            transition: 'width 0.1s, height 0.1s',
-            width: radius * 2,
-            height: radius * 2,
-            border: `2px solid rgba(255,255,255,${0.1 * contrastValue})`,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-          id="brain-contour-root"
-        >
-          {/* Inner temporal lobe shapes */}
-          <Box 
-            sx={{
-              position: 'absolute',
-              borderRadius: '50%',
-              border: '1.5px solid rgba(255,255,255,0.03)',
-              width: radius * 1.3,
-              height: radius * 0.9 * (1.1 - sliceDepth / 250),
-              transform: 'rotate(-12deg)',
-              background: 'radial-gradient(ellipse at center, rgba(30,41,59,0.3) 0%, rgba(15,23,42,0.9) 100%)'
-            }}
-          />
-
-          {/* Symmetrical left/right ventricles */}
-          <Box 
-            sx={{
-              position: 'absolute',
-              width: radius * 0.4,
-              height: radius * 0.3 + (sliceDepth % 15) * 0.4,
-              left: radius * 0.42,
-              top: radius * 0.68,
-              borderRadius: '60% 40% 41% 41% / 60% 40% 60% 40%',
-              bgcolor: '#090d16',
-              boxShadow: 'inset 0 0 10px rgba(255,255,255,0.04)',
-              borderBottom: '1px solid rgba(255,255,255,0.05)'
-            }}
-          />
-          <Box 
-            sx={{
-              position: 'absolute',
-              width: radius * 0.4,
-              height: radius * 0.3 + (sliceDepth % 15) * 0.4,
-              right: radius * 0.42,
-              top: radius * 0.68,
-              borderRadius: '40% 60% 41% 41% / 40% 60% 40% 60%',
-              bgcolor: '#090d16',
-              boxShadow: 'inset 0 0 10px rgba(255,255,255,0.04)',
-              borderBottom: '1px solid rgba(255,255,255,0.05)'
-            }}
-          />
-
-          {/* Symmetrical Left/Right Hippocampus nodes with AI heatmaps */}
-          <Box 
-            sx={{
-              position: 'absolute',
-              borderRadius: '50%',
-              bgcolor: showHeatmap ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.03)',
-              border: '1.5px solid',
-              borderColor: showHeatmap ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255,255,255,0.08)',
-              width: radius * 0.23,
-              height: radius * 0.38,
-              left: radius * 0.66,
-              top: radius * 1.08,
-              transform: 'rotate(-20deg)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            {showHeatmap && <Box sx={{ width: '60%', height: '60%', bgcolor: 'rgba(239,68,68,0.3)', borderRadius: '50%', animation: 'ping 1.5s infinite opacity' }} />}
-          </Box>
-
-          <Box 
-            sx={{
-              position: 'absolute',
-              borderRadius: '50%',
-              bgcolor: showHeatmap ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.03)',
-              border: '1.5px solid',
-              borderColor: showHeatmap ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255,255,255,0.08)',
-              width: radius * 0.23,
-              height: radius * 0.38,
-              right: radius * 0.66,
-              top: radius * 1.08,
-              transform: 'rotate(20deg)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            {showHeatmap && <Box sx={{ width: '60%', height: '60%', bgcolor: 'rgba(239,68,68,0.3)', borderRadius: '50%', animation: 'ping 1.5s infinite opacity' }} />}
-          </Box>
-
-          {/* AI Volumetric heat map overlay */}
-          {showHeatmap && (
-            <Box 
-              sx={{
-                position: 'absolute',
-                bgcolor: 'rgba(20,184,166,0.08)',
-                border: '1px solid rgba(20,184,166,0.2)',
-                borderRadius: 2,
-                width: radius * 1.05,
-                height: radius * 0.24,
-                top: radius * 1.25,
-                display: 'flex',
-                boxShadow: '0 0 10px rgba(20,184,166,0.1)'
-              }}
-            />
-          )}
-        </Box>
-      </Box>
-    );
-  };
+    return [
+      {
+        id: filename,
+        label: filename,
+        description: `${displayMriFile.content_type} • ${displayMriFile.size} bytes`,
+        source: { type: 'url' as const, urls },
+      },
+    ];
+  }, [apiBaseUrl, displayMriFile, patient.id]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }} id="patient-profile-root">
-      {/* Back Header panel */}
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          borderBottom: 1, 
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          borderBottom: 1,
           borderColor: 'divider',
-          pb: 1.5 
-        }} 
+          pb: 1.5,
+        }}
         id="profile-back-panel"
       >
-        <Button 
-          variant="outlined" 
-          size="small" 
-          onClick={onBack} 
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={onBack}
           startIcon={<ArrowLeftIcon />}
           id="btn-back-to-queue"
           sx={{ fontWeight: 'bold', textTransform: 'none', borderColor: 'divider', color: 'text.secondary' }}
@@ -305,28 +109,21 @@ console.log("history:", patientRecord);
         </Box>
       </Box>
 
-      {/* Main Container: Left Side demographic cards, Right Side Analyser Tabs */}
       <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', lg: '4.5fr 7.5fr' }, gap: 3.5 }} id="profile-detailed-panels">
-        
-        {/* Left Side Demographics card column */}
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="patient-demographic-column">
-          {/* Demographic basic cards */}
           <Card variant="outlined" id="summary-badge-identity" sx={{ borderRadius: 2 }}>
             <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
               <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 'bold', tracking: '-0.02em', mb: 0.5 }}>
-                    {displayName}
-                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 'bold', tracking: '-0.02em', mb: 0.5 }}>{displayName}</Typography>
                   <Typography variant="caption" color="text.secondary" sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <UserIcon sx={{ fontSize: 13 }} />
-                    MRN: <Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'primary.main' }}>{displayMrn}</Box>
+                    <UserIcon sx={{ fontSize: 13 }} /> MRN: <Box component="span" sx={{ fontFamily: 'monospace', fontWeight: 'bold', color: 'primary.main' }}>{displayMrn}</Box>
                   </Typography>
                 </Box>
-                <Chip 
-                  label={patient.last_prediction?.classification ?? 'Sem predição'} 
-                  color={patient.last_prediction?.risk_score && patient.last_prediction.risk_score >= 0.6 ? 'error' : patient.last_prediction?.risk_score && patient.last_prediction.risk_score >= 0.3 ? 'warning' : 'success'} 
-                  size="small" 
+                <Chip
+                  label={patient.last_prediction?.classification ?? 'Sem predição'}
+                  color={patient.last_prediction?.risk_score && patient.last_prediction.risk_score >= 0.6 ? 'error' : patient.last_prediction?.risk_score && patient.last_prediction.risk_score >= 0.3 ? 'warning' : 'success'}
+                  size="small"
                   sx={{ fontWeight: 'bold', height: 22 }}
                 />
               </Box>
@@ -334,577 +131,105 @@ console.log("history:", patientRecord);
               <Divider sx={{ my: 2 }} />
 
               <Box sx={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 2, fontSize: '12px' }} id="patient-metrics-demographic-list">
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>SEXO</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{patientRecord?.patient?.sex}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>IDADE</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayAge} anos</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>DATA DE NASCIMENTO</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayDob}</Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>HISTÓRICO ESCOLAR</Typography>
-                  <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayEducation} anos de estudo</Typography>
-                </Box>
+                <Box><Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>SEXO</Typography><Typography variant="body2" sx={{ fontWeight: 'bold' }}>{patient.sex}</Typography></Box>
+                <Box><Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>IDADE</Typography><Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayAge} anos</Typography></Box>
+                <Box><Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>DATA DE NASCIMENTO</Typography><Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayDob}</Typography></Box>
+                <Box><Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>HISTÓRICO ESCOLAR</Typography><Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayEducation} anos de estudo</Typography></Box>
                 {displayMriFile && (
                   <Box sx={{ gridColumn: { xs: '1 / -1' } }}>
                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>ARQUIVO MRI ENVIADO</Typography>
                     <Typography variant="body2" sx={{ fontWeight: 'bold' }}>{displayMriFile.filename}</Typography>
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                      {displayMriFile.content_type} • {displayMriFile.size} bytes
-                    </Typography>
+                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>{displayMriFile.content_type} • {displayMriFile.size} bytes</Typography>
                   </Box>
                 )}
               </Box>
             </CardContent>
           </Card>
-
-          {/* Clinical history cards */}
-          <Card variant="outlined" id="summary-badge-history" sx={{ borderRadius: 2 }}>
-            <CardContent sx={{ p: 2.5, '&:last-child': { pb: 2.5 } }}>
-              <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', mb: 1.5 }}>
-                Histórico clínico e sintomas
-              </Typography>
-
-              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }} id="clinical-history-bullet-panel">
-                {/* Presenting symptoms */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Sintomas atuais</Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="symptom-tag-chips-pile">
-                    {(patientRecord?.patient?.clinical_data?.symptoms ?? patientRecord?.patient?.clinical_data?.symptoms ?? []).map((s, idx) => (
-                      <Chip key={idx} label={s} size="small" variant="filled" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
-                    ))}
-                  </Box>
-                </Box>
-
-                {/* Hereditary family context */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Histórico familiar de demência</Typography>
-                  {patientRecord?.patient?.clinical_data?.family_history ? (
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }} id="family-relation-line">
-                      <DnaIcon sx={{ fontSize: 13, color: 'primary.main' }} />
-                      <Typography variant="body2" sx={{ fontWeight: 'bold' }}>
-                        Possuí histórico familiar de demência (Alzheimer ou outras formas) em parentes de primeiro grau
-                      </Typography>
-                    </Box>
-                  ) : (
-                    <Typography variant="body2" color="text.secondary">Nenhum histórico familiar relatado</Typography>
-                  )}
-                </Box>
-
-                {/* ApoE biomarker panel */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Marcadores ApoE e fatores de risco</Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="risks-tag-chips-pile">
-                    {(patientRecord?.patient?.clinical_data?.biomarkers ?? patientRecord?.patient?.clinical_data?.biomarkers ?? []).map((r, idx) => (
-                      <Chip key={idx} label={r} size="small" variant="outlined" color="error" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
-                    ))}
-                  </Box>
-                </Box>
-
-                {/* Comorbidities */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.8, fontWeight: 'bold' }}>Comorbidades registradas</Typography>
-                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.8 }} id="comorbidities-tag-chips-pile">
-                    {(patientRecord?.patient?.clinical_data?.comorbidities ?? patientRecord?.patient?.clinical_data?.comorbidities ?? []).map((c, idx) => (
-                      <Chip key={idx} label={c} size="small" variant="outlined" sx={{ height: 20, fontSize: '10px', fontWeight: 'bold' }} />
-                    ))}
-                  </Box>
-                </Box>
-
-                {/* Active medications */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5, fontWeight: 'bold' }}>Medicamentos em uso</Typography>
-                  <Box sx={{ pl: 1, borderLeft: 2, borderColor: 'primary.light' }} id="medications-review-list">
-                    {(patientRecord?.patient?.clinical_data?.medications ?? patientRecord?.patient?.clinical_data?.medications ?? []).map((m, idx) => (
-                      <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'bold', color: 'text.secondary' }}>
-                        • {m}
-                      </Typography>
-                    ))}
-                  </Box>
-                </Box>
-              </Box>
-            </CardContent>
-          </Card>
         </Box>
 
-        {/* Right Side In-Depth Tab Panels */}
         <Box id="profile-assessment-tabs-container-wrapper">
           <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }} id="profile-assessment-tabs-container">
-            {/* Tabs selector */}
             <Box sx={{ borderBottom: 1, borderColor: 'divider', bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)' }}>
-              <Tabs 
-                value={activeTab} 
-                onChange={(e, val) => setActiveTab(val)} 
-                variant="fullWidth"
-                id="patient-tabs-navbar"
-              >
-                <Tab 
-                  label="Avaliações cognitivas" 
-                  value="clinical" 
-                  icon={<FileTextIcon fontSize="small" />} 
-                  iconPosition="start"
-                  sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '12px' }}
-                />
-                <Tab 
-                  label="Neuroimagem (Ressonância 3T)" 
-                  value="imaging" 
-                  icon={<BrainIcon fontSize="small" />} 
-                  iconPosition="start"
-                  sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '12px' }}
-                />
-                <Tab 
-                  label="IA explicável" 
-                  value="ai" 
-                  icon={<CpuIcon fontSize="small" />} 
-                  iconPosition="start"
-                  sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '12px' }}
-                />
+              <Tabs value={activeTab} onChange={(_, value) => setActiveTab(value)} variant="fullWidth" id="patient-tabs-navbar">
+                <Tab label="Avaliações cognitivas" value="clinical" icon={<FileTextIcon fontSize="small" />} iconPosition="start" sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '12px' }} />
+                <Tab label="Neuroimagem (Ressonância 3T)" value="imaging" icon={<BrainIcon fontSize="small" />} iconPosition="start" sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '12px' }} />
+                <Tab label="IA explicável" value="ai" icon={<CpuIcon fontSize="small" />} iconPosition="start" sx={{ textTransform: 'none', fontWeight: 'bold', fontSize: '12px' }} />
               </Tabs>
             </Box>
 
-            {/* TAB CONTENTS CONTAINER */}
             <Box sx={{ p: { xs: 2, md: 3 } }}>
-
-              {/* TAB 1: Cognitive Assessments */}
               {activeTab === 'clinical' && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }} id="panel-clinical-cognitive-root">
-                  {/* Cognitive Score Summary Cards */}
-                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }} id="clinical-scores-grid">
-                    <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
-                      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">PONTUAÇÃO MMSE</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMmse} / 30</Typography>
-                        <Chip 
-                          label="Avaliação" 
-                          color="primary" 
-                          size="small" 
-                          sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
-                        />
-                      </CardContent>
-                    </Card>
-
-                    <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
-                      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">PONTUAÇÃO MOCA</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMoca} / 30</Typography>
-                        <Chip 
-                          label="Avaliação" 
-                          color="primary" 
-                          size="small" 
-                          sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
-                        />
-                      </CardContent>
-                    </Card>
-
-                    <Card variant="outlined" sx={{ bgcolor: theme.palette.mode === 'light' ? '#fcfcfc' : 'rgba(255,255,255,0.005)' }}>
-                      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CLASSIFICAÇÃO CDR</Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayCdr} / 3.0</Typography>
-                        <Chip 
-                          label="Avaliação" 
-                          color="info" 
-                          size="small" 
-                          sx={{ mt: 1, height: 18, fontSize: '9px', fontWeight: 'bold' }}
-                        />
-                      </CardContent>
-                    </Card>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr 1fr' }, gap: 2 }}>
+                    <Card variant="outlined"><CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}><Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">MMSE</Typography><Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMmse} / 30</Typography></CardContent></Card>
+                    <Card variant="outlined"><CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}><Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">MoCA</Typography><Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayMoca} / 30</Typography></CardContent></Card>
+                    <Card variant="outlined"><CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}><Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CDR</Typography><Typography variant="h5" sx={{ fontWeight: 'bold', mt: 1 }}>{displayCdr} / 3.0</Typography></CardContent></Card>
                   </Box>
-
-                  {/* Cognitive score evolution line-chart */}
-                  <Paper variant="outlined" id="historical-eval-trends-card" sx={{ p: 2.5, borderRadius: 2 }}>
-                    <Box sx={{ mb: 2 }}>
-                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Tendências cognitivas históricas</Typography>
-                      <Typography variant="caption" color="text.secondary">Linha do tempo retrospectiva das avaliações cognitivas (últimas 4 consultas).</Typography>
-                    </Box>
-
-                    {/* Integrated Recharts Line chart */}
-                    <Box sx={{ height: 260, width: '100%' }} id="cognitive-chart-inner">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                          data={historySeries}
-                          margin={{ top: 5, right: 15, left: -20, bottom: 5 }}
-                        >
-                          <CartesianGrid strokeDasharray="3 3" stroke={theme.palette.divider} />
-                          <XAxis dataKey="name" fontSize={10} stroke={theme.palette.text.secondary} />
-                          <YAxis domain={[0, 30]} fontSize={10} stroke={theme.palette.text.secondary} />
-                          <Tooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: '6px', border: `1px solid ${theme.palette.divider}` }} />
-                          <Legend wrapperStyle={{ fontSize: '10px', marginTop: '10px' }} />
-                          <Line type="monotone" dataKey="MMSE" stroke="#0ea5e9" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                          <Line type="monotone" dataKey="MoCA" stroke="#10b981" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                          <Line type="monotone" dataKey="CDR" stroke="#f43f5e" strokeWidth={2.5} strokeDasharray="5 5" name="CDR Scale (x10)" dot={{ r: 3 }} />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </Box>
+                  <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>Resumo cognitivo</Typography>
+                    <Typography variant="body2" color="text.secondary">Esta aba mantém a visão geral clínica do paciente e os indicadores históricos disponíveis.</Typography>
                   </Paper>
                 </Box>
               )}
 
-              {/* TAB 2: Neuroimaging Modality Ingestion & Interactive Slices */}
               {activeTab === 'imaging' && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }} id="panel-imaging-biomarkers-root">
-                  {exam ? (
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 3.5 }} id="structural-imaging-inner-grid">
-                      {/* Left: Interactive Slice slider structure */}
-                      <Box>
-                        <Paper variant="outlined" sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }} id="interactive-slice-controller-card">
-                          <Typography variant="body2" sx={{ fontWeight: 'bold', mb: 1 }}>Reconstrução no plano coronal</Typography>
-                          
-                          {/* Inner interactive canvas */}
-                          {renderInteractiveScan()}
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+                  <ExamViewer
+                    title="Visualizador NiiVue do exame"
+                    description="Abra o exame salvo do paciente e carregue novos arquivos localmente no mesmo canvas."
+                    initialExams={initialExamSources}
+                    emptyStateTitle="Nenhum exame estruturado disponível"
+                    emptyStateDescription="Se o backend ainda não expôs o arquivo NIfTI do paciente, use o upload para carregar um `.nii` ou `.nii.gz`."
+                    height={620}
+                  />
 
-                          {/* Depth slider controls */}
-                          <Box sx={{ width: '100%', px: 1, mt: 1 }}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', mb: 0.5 }} color="text.secondary">
-                              Fatia Z posicional: {sliceDepth}%
-                            </Typography>
-                            <Slider 
-                              value={sliceDepth} 
-                              onChange={(e, val) => setSliceDepth(val as number)}
-                              size="small"
-                              valueLabelDisplay="off"
-                              min={10}
-                              max={90}
-                              sx={{ py: 1 }}
-                              id="mri-slice-slider-field"
-                            />
-                            
-                            <Box sx={{ mt: 1 }}>
-                              <FormControlLabel
-                                control={
-                                  <Switch 
-                                    checked={showHeatmap} 
-                                    onChange={(e) => setShowHeatmap(e.target.checked)} 
-                                    size="small" 
-                                    id="mri-heatmap-toggle"
-                                  />
-                                }
-                                label={<Typography variant="caption" sx={{ fontWeight: 'bold' }}>Sobreposição de destaque volumétrico por IA (MONAI)</Typography>}
-                              />
-                            </Box>
-                          </Box>
-                        </Paper>
-                      </Box>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' }, gap: 2.5 }}>
+                    <Card variant="outlined">
+                      <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
+                        <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CONFIGURAÇÃO DA MODALIDADE</Typography>
+                        <Typography variant="body2" sx={{ mt: 1, fontWeight: 'bold' }}>{exam?.scan_type ?? '—'} • {exam?.scan_date ?? '—'}</Typography>
+                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>Fatia: {exam?.slice_thickness ?? '—'} • Campo: {exam?.magnetic_strength || '3.0T Core'}</Typography>
+                      </CardContent>
+                    </Card>
 
-                      {/* Right: Numerical brain volume findings columns */}
-                      <Box>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }} id="imaging-calculations-columns">
-                          {/* Biomarker details card */}
-                          <Card variant="outlined" id="scan-raw-metrics">
-                            <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                              <Typography variant="caption" sx={{ fontWeight: 'bold' }} color="text.secondary">CONFIGURAÇÃO DA MODALIDADE DE IMAGEM</Typography>
-                              <Typography variant="body2" sx={{ fontWeight: 'extrabold', mt: 1 }}>{exam.scan_type ?? '—'} • {exam.scan_date ?? '—'}</Typography>
-                              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                Fatia: {exam.slice_thickness ?? '—'} • Campo: {exam.magnetic_strength || '3.0T Core'}
-                              </Typography>
-                            </CardContent>
-                          </Card>
-
-                          {/* Processing findings lists */}
-                          {imagingAnalysis && (
-                            <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }} id="calculated-volumetrics-card">
-                              <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', mb: 1.5 }} color="text.secondary">
-                                VOLUMETRIAS REGIONAIS CALCULADAS POR IA
-                              </Typography>
-                              
-                              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.8 }} id="volume-factors-list">
-                                {/* Left Hippocampal Volume */}
-                                <Box>
-                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Volume hipocampal esquerdo</Typography>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.left_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_left ?? '—'} cm³</Typography>
-                                  </Box>
-                                  <LinearProgress variant="determinate" value={Math.min(100, ((imagingAnalysis.left_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_left ?? 0) / 4.5) * 100)} sx={{ height: 4, borderRadius: 1 }} color="primary" />
-                                </Box>
-
-                                {/* Right Hippocampal Volume */}
-                                <Box>
-                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Volume hipocampal direito</Typography>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.right_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_right ?? '—'} cm³</Typography>
-                                  </Box>
-                                  <LinearProgress variant="determinate" value={Math.min(100, ((imagingAnalysis.right_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_right ?? 0) / 4.5) * 100)} sx={{ height: 4, borderRadius: 1 }} color="primary" />
-                                </Box>
-
-                                {/* Ventricular ratio */}
-                                <Box>
-                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Razão de enlargement ventricular</Typography>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{(imagingAnalysis.ventricle_enlargement_ratio ?? imagingAnalysis.ventricle_ratio ?? 0).toFixed(3)}</Typography>
-                                  </Box>
-                                  <LinearProgress variant="determinate" value={Math.min(100, ((imagingAnalysis.ventricle_enlargement_ratio ?? imagingAnalysis.ventricle_ratio ?? 0) / 0.1) * 100)} sx={{ height: 4, borderRadius: 1 }} color="warning" />
-                                </Box>
-
-                                {/* Cortical depth average */}
-                                <Box>
-                                  <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 0.5 }}>
-                                    <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Espessura cortical média</Typography>
-                                    <Typography variant="caption" sx={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{imagingAnalysis.cortical_thickness_avg ?? imagingAnalysis.cortical_thickness ?? '—'} mm</Typography>
-                                  </Box>
-                                  <LinearProgress variant="determinate" value={Math.min(100, ((imagingAnalysis.cortical_thickness_avg ?? imagingAnalysis.cortical_thickness ?? 0) / 3) * 100)} sx={{ height: 4, borderRadius: 1 }} color="success" />
-                                </Box>
-                              </Box>
-                            </Paper>
-                          )}
+                    {imagingAnalysis ? (
+                      <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                        <Typography variant="caption" sx={{ fontWeight: 'bold', display: 'block', mb: 1.5 }} color="text.secondary">VOLUMETRIAS REGIONAIS CALCULADAS POR IA</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                          <Typography variant="body2">Hipocampo esquerdo: {imagingAnalysis.left_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_left ?? '—'} cm³</Typography>
+                          <Typography variant="body2">Hipocampo direito: {imagingAnalysis.right_hippocampal_volume ?? imagingAnalysis.hippocampal_volume_right ?? '—'} cm³</Typography>
+                          <Typography variant="body2">Razão ventricular: {(imagingAnalysis.ventricle_enlargement_ratio ?? imagingAnalysis.ventricle_ratio ?? 0).toFixed(3)}</Typography>
+                          <Typography variant="body2">Espessura cortical: {imagingAnalysis.cortical_thickness_avg ?? imagingAnalysis.cortical_thickness ?? '—'} mm</Typography>
                         </Box>
-                      </Box>
-                    </Box>
-                  ) : (
-                    /* In case there is no imaging, provide standard simulator / upload box */
-                    <Paper 
-                      variant="outlined" 
-                      id="card-imaging-backlogs-uploader"
-                      sx={{ 
-                        p: 4, 
-                        textAlign: 'center', 
-                        bgcolor: theme.palette.mode === 'light' ? '#f8fafc' : 'rgba(255,255,255,0.01)',
-                        border: '2px dashed',
-                        borderColor: 'divider',
-                        borderRadius: 2
-                      }}
-                    >
-                      {mriUploading ? (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, maxWidth: 280, mx: 'auto' }} id="mri-uploader-running">
-                          <CircularProgress />
-                          <Typography variant="caption" sx={{ fontWeight: 'bold' }}>Simulando corte estrutural coronal...</Typography>
-                        </Box>
-                      ) : (
-                        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }} id="mri-uploader-idle">
-                          <Box sx={{ p: 1.5, bgcolor: 'primary.light', color: 'primary.contrastText', borderRadius: '50%', display: 'flex' }}>
-                            <UploadIcon fontSize="large" />
-                          </Box>
-                          <Typography variant="body1" sx={{ fontWeight: 'bold' }}>Imagem de ressonância ausente para este perfil</Typography>
-                          <Typography variant="caption" color="text.secondary" sx={{ maxWidth: 400, mx: 'auto' }}>
-                            Faça upload de conjuntos de voxels estruturais coronais ponderados em T1 de 3T (.nii ou .nii.gz) para iniciar as volumetrias do hipocampo.
-                          </Typography>
-                          <Box sx={{ position: 'relative', mt: 1 }}>
-                            <input
-                              id="file-input-mri-upload"
-                              type="file"
-                              accept=".nii,.nii.gz"
-                              ref={fileInputRef}
-                              onChange={async (e) => {
-                                const file = e.target.files?.[0];
-                                if (!file) return;
-
-                                await uploadMriAndPredict({
-                                    patientId: patient.id,
-                                    file,
-                                    age: patient.age,
-                                    mmse: displayMmse,
-                                    cdr: displayCdr,
-                                    cdrtot: displayCdr,
-                                });
-
-                                e.target.value = '';
-                             }}
-                              style={{
-                                position: 'absolute',
-                                top: 0, right: 0, bottom: 0, left: 0,
-                                opacity: 0,
-                                cursor: 'pointer'
-                              }}
-                            />
-                            
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                size="small"
-                                sx={{ fontWeight: 'bold' }}
-                                onClick={() => fileInputRef.current?.click()}
-                            >
-                                Escolher conjunto de voxels
-                            </Button>
-                            {uploadError && (
-                                <Alert severity="error" sx={{ maxWidth: 420 }}>
-                                    {uploadError}
-                                </Alert>
-                                )}
-
-                                {uploadedFile && !uploadError && (
-                                <Alert severity="success" sx={{ maxWidth: 420 }}>
-                                    MRI enviada com sucesso: {uploadedFile}. A aba de IA explicável foi atualizada com a previsão mais recente.
-                                </Alert>
-                            )}
-
-                          </Box>
-                          {uploadedFile && (
-                            <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold' }}>
-                              ✓ Upload simulado concluído: {uploadedFile}. Recarregue a página para executar as métricas novamente.
-                            </Typography>
-                          )}
-                        </Box>
-                      )}
-                    </Paper>
-                  )}
+                      </Paper>
+                    ) : (
+                      <Paper variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
+                        <Typography variant="body2" color="text.secondary">Nenhuma análise volumétrica calculada ainda para este exame.</Typography>
+                      </Paper>
+                    )}
+                  </Box>
                 </Box>
               )}
 
-              {/* TAB 3: Explainable AI Analytics Panel */}
               {activeTab === 'ai' && (
-                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }} id="panel-ai-explainability-root">
-                  {/* Dynamic predictor gauge */}
-                  {mergedAiAnalysis && (
-                    <Paper 
-                      variant="outlined" 
-                      id="card-ai-risk-gauge"
-                      sx={{ 
-                        p: 2.5, 
-                        borderRadius: 2, 
-                        display: 'flex', 
-                        flexDirection: { xs: 'column', sm: 'row' }, 
-                        alignItems: 'center', 
-                        gap: 3,
-                        borderColor: mergedAiAnalysis.risk_score >= 0.6 ? 'error.light' : mergedAiAnalysis.risk_score >= 0.3 ? 'warning.light' : 'success.light',
-                        bgcolor: mergedAiAnalysis.risk_score >= 0.6 ? 'rgba(239, 68, 68, 0.02)' : mergedAiAnalysis.risk_score >= 0.3 ? 'rgba(245, 158, 11, 0.02)' : 'rgba(16, 185, 129, 0.02)'
-                      }}
-                    >
-                      {/* Percent badge */}
-                      <Box sx={{ position: 'relative', display: 'flex', shrink: 0 }}>
-                        <CircularProgress 
-                          variant="determinate" 
-                          value={Math.round(mergedAiAnalysis.risk_score * 100)} 
-                          size={72} 
-                          thickness={5} 
-                          color={mergedAiAnalysis.risk_score >= 0.6 ? 'error' : mergedAiAnalysis.risk_score >= 0.3 ? 'warning' : 'success'} 
-                        />
-                        <Box sx={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                          <Typography variant="body2" sx={{ fontFamily: 'monospace', fontWeight: 'black' }}>
-                            {Math.round(mergedAiAnalysis.risk_score * 100)}%
-                          </Typography>
-                        </Box>
-                      </Box>
-                      
-                      <Box>
-                        <Typography variant="body2" sx={{ fontWeight: 'black', textTransform: 'uppercase', color: mergedAiAnalysis.risk_score >= 0.6 ? 'error.main' : mergedAiAnalysis.risk_score >= 0.3 ? 'warning.main' : 'success.main' }}>
-                          Previsão prognóstica: risco {mergedAiAnalysis.classification} de DA
-                        </Typography>
-                        <Typography variant="caption" sx={{ display: 'block', mt: 0.5, lineHeight: 1.4 }} color="text.secondary">
-                          Classificação: {mergedAiAnalysis.classification} — confiança {(mergedAiAnalysis.confidence * 100).toFixed(0)}%
-                        </Typography>
-                        <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', display: 'block', mt: 1, fontWeight: 'bold' }}>
-                          Quociente de confiança: {(mergedAiAnalysis.confidence * 100).toFixed(1)}% (atribuições do PyTorch calibradas)
-                        </Typography>
-                      </Box>
+                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+                  {mergedAiAnalysis ? (
+                    <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
+                      <Typography variant="subtitle2" sx={{ fontWeight: 'bold' }}>Predição mais recente</Typography>
+                      <Typography variant="body2" sx={{ mt: 1 }}>Classificação: {mergedAiAnalysis.classification ?? '—'}</Typography>
+                      <Typography variant="body2">Confiança: {(((mergedAiAnalysis.confidence ?? 0) * 100).toFixed(1))}%</Typography>
+                      <Typography variant="body2">Risco: {Math.round((mergedAiAnalysis.risk_score ?? mergedAiAnalysis.probability ?? 0) * 100)}%</Typography>
                     </Paper>
-                  )}
-
-                  {/* SHAP attributions bar chart and risk descriptors columns */}
-                  {mergedAiAnalysis && (
-                    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.2fr 1.1fr' }, gap: 3.5 }} id="ai-detailed-scoring-grid">
-                      {/* SHAP Bar Chart */}
-                      <Box>
-                        <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2, height: '100%' }} id="shap-bar-chart-card">
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="caption" sx={{ fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em' }} color="text.secondary">
-                              VARIÁVEIS QUE INFLUENCIAM A PREVISÃO
-                            </Typography>
-                            <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }} color="text.secondary">
-                              Variáveis principais que elevam (+) ou mantêm (-) o risco previsto
-                            </Typography>
-                          </Box>
-
-                          <Box sx={{ height: 240, width: '100%', mt: 2 }} id="shap-chart-container">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <BarChart
-                                data={shapData}
-                                layout="vertical"
-                                margin={{ top: 2, right: 10, left: 10, bottom: 2 }}
-                              >
-                                <CartesianGrid strokeDasharray="3 3" horizontal={true} stroke={theme.palette.divider} />
-                                <XAxis type="number" stroke={theme.palette.text.secondary} fontSize={9} domain={[-20, 40]} />
-                                <YAxis dataKey="name" type="category" stroke={theme.palette.text.primary} fontSize={9} width={100} />
-                                <Tooltip 
-                                  contentStyle={{ 
-                                    backgroundColor: '#020617', 
-                                    color: '#ffffff', 
-                                    borderRadius: '6px', 
-                                    border: 'none', 
-                                    fontSize: '10px' 
-                                  }} 
-                                />
-                                <ReferenceLine x={0} stroke={theme.palette.text.secondary} strokeWidth={1} />
-                                <Bar dataKey="value" strokeWidth={1}>
-                                  {shapData.map((entry, index) => {
-                                    // Blue for protective factors (negative pull), Red for risk factors (positive pull)
-                                    const fill = entry.value >= 0 ? '#f43f5e' : '#0ea5e9';
-                                    return <Cell key={`cell-${index}`} fill={fill} />;
-                                  })}
-                                </Bar>
-                              </BarChart>
-                            </ResponsiveContainer>
-                          </Box>
-                        </Paper>
-                      </Box>
-
-                      {/* Diagnostic Lists columns */}
-                      <Box>
-                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, height: '100%' }} id="clinical-factor-columns">
-                          {/* Risk Drivers Card */}
-                          <Paper 
-                            variant="outlined" 
-                            id="card-ai-risk-drivers"
-                            sx={{ 
-                              p: 2, 
-                              borderRadius: 2, 
-                              bgcolor: 'rgba(239, 68, 68, 0.03)', 
-                              borderColor: 'rgba(239, 68, 68, 0.15)',
-                              flexGrow: 1
-                            }}
-                          >
-                            <Typography variant="caption" sx={{ color: 'error.main', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                              <Box sx={{ width: 6, height: 6, bgcolor: '#f43f5e', borderRadius: '50%', animation: 'pulse 1.5s infinite' }} />
-                              Fatores de alto risco identificados
-                            </Typography>
-                            
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} id="risk-drivers-list">
-                              {(mergedAiAnalysis.explanation ?? []).filter((entry) => entry.direction === 'risk').map((driver, idx) => (
-                                <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'medium', color: theme.palette.mode === 'light' ? 'error.dark' : 'error.light' }}>
-                                  • {driver.feature}
-                                </Typography>
-                              ))}
-                            </Box>
-                          </Paper>
-
-                          {/* Protective Factors Card */}
-                          <Paper 
-                            variant="outlined" 
-                            id="card-ai-protective-drivers"
-                            sx={{ 
-                              p: 2, 
-                              borderRadius: 2, 
-                              bgcolor: 'rgba(16, 185, 129, 0.03)', 
-                              borderColor: 'rgba(16, 185, 129, 0.15)',
-                              flexGrow: 1
-                            }}
-                          >
-                            <Typography variant="caption" sx={{ color: 'success.main', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: 1, mb: 1.5 }}>
-                              ⚡ Fatores protetores identificados
-                            </Typography>
-
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }} id="protective-drivers-list">
-                              {(mergedAiAnalysis.explanation ?? []).filter((entry) => entry.direction === 'protective').map((prot, idx) => (
-                                <Typography key={idx} variant="caption" sx={{ display: 'block', fontWeight: 'medium', color: theme.palette.mode === 'light' ? 'success.dark' : 'success.light' }}>
-                                  • {prot.feature}
-                                </Typography>
-                              ))}
-                            </Box>
-                          </Paper>
-                        </Box>
-                      </Box>
-                    </Box>
+                  ) : (
+                    <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
+                      <Typography variant="body2" color="text.secondary">Nenhuma predição de IA foi gerada para este paciente.</Typography>
+                    </Paper>
                   )}
                 </Box>
               )}
-
             </Box>
           </Paper>
         </Box>
-
       </Box>
     </Box>
   );
