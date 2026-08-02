@@ -1,4 +1,4 @@
-import type { PatientSex } from './patient.types';
+import type { PatientSex } from './ui.types';
 
 export type WorkflowStep = 1 | 2 | 3 | 4 | 5 | 6;
 

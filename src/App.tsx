@@ -16,15 +16,16 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query/react-query';
+import type { AppView, ToastMessage } from './types';
 
 // Feature-local imports (new pattern)
 import Layout from './features/components/Layout/Layout';
 import DoctorDashboard from './features/dashboard/components/DoctorDashboard/DoctorDashboard';
-import PatientProfile from './features/patient-profile/components/PatientProfile/PatientProfile';
 import ClinicalWorkflow from './features/clinical-workflow/components/ClinicalWorkflow/ClinicalWorkflow';
 
 import { useGetPatients } from './features/dashboard/react-queries/useGetPatients';
 import { useGetPatient } from './features/patient-profile/react-queries/useGetPatient';
+import PatientProfile from './features/patient-profile/components/PatientProfile/PatientProfile';
 
 function WorkspaceRoot({
   isDarkMode,
@@ -33,15 +34,10 @@ function WorkspaceRoot({
   isDarkMode: boolean;
   onToggleTheme: () => void;
 }) {
-  const [activeView, setActiveView] = useState<'dashboard' | 'profile' | 'workflow'>(
-    'dashboard',
-  );
+  const [activeView, setActiveView] = useState<AppView>('dashboard');
   // FIX: start as null so usePatient does not fire before a patient is selected
   const [selectedPatientId, setSelectedPatientId] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<{
-    text: string;
-    type: 'success' | 'info' | 'error';
-  } | null>(null);
+  const [toastMessage, setToastMessage] = useState<ToastMessage | null>(null);
 
   const { data: patients = [], isLoading: listLoading } = useGetPatients();
   // FIX: pass empty string when null so the query is disabled (enabled: !!id)

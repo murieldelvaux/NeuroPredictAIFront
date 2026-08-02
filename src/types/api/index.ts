@@ -5,8 +5,6 @@ export type {
   PatientResponse,
   PatientDetailResponse,
   PatientLastPrediction,
-  PatientDemographicsResponse,
-  PatientHistoryResponse,
   PatientExamResponse,
   PatientImagingAnalysisResponse,
   PatientAIAnalysisResponse,
