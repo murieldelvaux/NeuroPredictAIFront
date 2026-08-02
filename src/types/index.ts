@@ -1,7 +1,7 @@
 // Barrel de re-exports — importe sempre daqui
 // API types only - no UI-only abstractions
 
-export type { AppView, PatientSex, PatientStatus, RiskCategory, ToastMessage } from './ui.types';
+export type { PatientSex, PatientStatus, RiskCategory, ToastMessage } from './ui.types';
 export type { MedicalWorkflowSession, WorkflowStep } from './workflow.types';
 export type {
   PatientCreatePayload,
