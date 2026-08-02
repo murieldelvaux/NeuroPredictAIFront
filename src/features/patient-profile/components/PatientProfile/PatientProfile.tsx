@@ -32,9 +32,12 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
   const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000';
   const patient = patientRecord?.patient;
   const cognitive = patientRecord?.patient?.clinical_data;
-  const exam = patientRecord?.exam;
-  const imagingAnalysis = patientRecord?.imaging_analysis;
-  const aiAnalysis = (patientRecord.ai_analysis ?? null) as any;
+  // TODO: campo não existe no backend; mantido para preservar a UI legada.
+  const exam = (patientRecord as any)?.exam;
+  // TODO: campo não existe no backend; mantido para preservar a UI legada.
+  const imagingAnalysis = (patientRecord as any)?.imaging_analysis;
+  // TODO: campo não existe no backend; mantido para preservar a UI legada.
+  const aiAnalysis = (patientRecord as any)?.ai_analysis ?? null;
 
   const { activeTab, setActiveTab, predictedAiAnalysis } = usePatientProfile();
 
@@ -43,7 +46,8 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
   }
 
   const displayName = patient.name;
-  const displayMrn = patient.mrn ?? '—';
+  // TODO: campo não existe no backend; mantido para preservar a UI legada.
+  const displayMrn = (patient as any).mrn ?? '—';
   const displayDob = patient.date_of_birth ?? '—';
   const displayAge = patient.age;
   const displayEducation = cognitive?.education_years ?? 0;

@@ -5,11 +5,6 @@ export type {
   PatientResponse,
   PatientDetailResponse,
   PatientLastPrediction,
-  PatientDemographicsResponse,
-  PatientHistoryResponse,
-  PatientExamResponse,
-  PatientImagingAnalysisResponse,
-  PatientAIAnalysisResponse,
   HealthResponse,
 } from './patient.api.types';
 

@@ -70,7 +70,6 @@ export const updateClinicalEvaluation = async (
     name: detail.patient.name,
     age: detail.patient.age,
     sex: detail.patient.sex,
-    mrn: detail.demographics?.mrn ?? null,
     date_of_birth: detail.patient.date_of_birth ?? null,
     created_at: detail.patient.created_at,
     last_prediction: detail.patient.last_prediction ?? null,

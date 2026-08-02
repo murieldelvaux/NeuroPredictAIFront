@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
-import type { PatientResponse } from '../../../types';
+import type { PatientResponse, PatientStatus, RiskCategory } from '../../../types';
 
-const normalizeRiskCategory = (classification?: string | null, score = 0): 'High' | 'Moderate' | 'Low' => {
+const normalizeRiskCategory = (classification?: string | null, score = 0): RiskCategory => {
   const normalized = String(classification ?? '').trim().toLowerCase();
   if (normalized === 'ad') return 'High';
   if (normalized === 'mci') return 'Moderate';
@@ -16,13 +16,13 @@ const getPatientRiskScore = (patient: PatientResponse) => patient.last_predictio
 const getPatientRiskCategory = (patient: PatientResponse) =>
   normalizeRiskCategory(patient.last_prediction?.classification, getPatientRiskScore(patient));
 
-const getPatientStatus = (patient: PatientResponse): 'Completed' | 'Pending Interpretation' =>
+const getPatientStatus = (patient: PatientResponse): PatientStatus =>
   patient.last_prediction ? 'Completed' : 'Pending Interpretation';
 
 export function useDoctorDashboard(patients: PatientResponse[]) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [riskFilter, setRiskFilter] = useState<'ALL' | 'High' | 'Moderate' | 'Low'>('ALL');
-  const [statusFilter, setStatusFilter] = useState<'ALL' | 'Completed' | 'Pending Interpretation'>('ALL');
+  const [riskFilter, setRiskFilter] = useState<'ALL' | RiskCategory>('ALL');
+  const [statusFilter, setStatusFilter] = useState<'ALL' | PatientStatus>('ALL');
 
   const stats = useMemo(() => {
     const total = patients.length;
@@ -40,7 +40,8 @@ export function useDoctorDashboard(patients: PatientResponse[]) {
       const status = getPatientStatus(p);
       const matchesSearch =
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.mrn ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        // TODO: campo não existe no backend; mantido para preservar a UI legada.
+        ((p as any).mrn ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.id.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesRisk = riskFilter === 'ALL' || category === riskFilter;
       const matchesStatus = statusFilter === 'ALL' || status === statusFilter;
