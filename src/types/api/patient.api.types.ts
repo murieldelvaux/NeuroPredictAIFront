@@ -11,6 +11,7 @@ export type MRIFileMetadata = {
   filename: string;
   content_type: string;
   size: number;
+  url?: string | null;
 };
 
 export type ClinicalDataPayload = {

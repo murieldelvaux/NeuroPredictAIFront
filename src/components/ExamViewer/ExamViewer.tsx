@@ -10,7 +10,7 @@ type ExamFileSource = {
 
 type ExamUrlSource = {
   type: 'url';
-  urls: string[];
+  url: string;
 };
 
 export type ExamSource = {
@@ -95,20 +95,10 @@ export default function ExamViewer({
         if (activeExam.source.type === 'file') {
           await viewer.loadFromFile(activeExam.source.file);
         } else {
-          let lastError: unknown = null;
-          for (const candidateUrl of activeExam.source.urls) {
-            try {
-              await viewer.loadFromUrl(candidateUrl);
-              lastError = null;
-              break;
-            } catch (candidateError) {
-              lastError = candidateError;
-            }
-          }
-
-          if (lastError) {
-            throw lastError;
-          }
+          await viewer.addVolumeFromUrl({
+            url: activeExam.source.url,
+            name: activeExam.label,
+          });
         }
       } catch (error) {
         if (!cancelled) {

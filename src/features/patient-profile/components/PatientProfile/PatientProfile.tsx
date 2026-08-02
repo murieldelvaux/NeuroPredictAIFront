@@ -29,12 +29,10 @@ import ExamViewer from '../../../../components/ExamViewer/ExamViewer';
 
 export default function PatientProfile({ patientRecord, onBack }: PatientProfileProps) {
   const theme = useTheme();
-  const apiBaseUrl = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000';
   const patient = patientRecord?.patient;
   const cognitive = patientRecord?.patient?.clinical_data;
   const exam = patientRecord?.exam;
   const imagingAnalysis = patientRecord?.imaging_analysis;
-  const aiAnalysis = (patientRecord.ai_analysis ?? null) as any;
 
   const { activeTab, setActiveTab, predictedAiAnalysis } = usePatientProfile();
 
@@ -51,6 +49,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
   const displayMoca = cognitive?.moca ?? 0;
   const displayCdr = cognitive?.cdr ?? 0;
   const displayMriFile = cognitive?.mri_file;
+  const aiAnalysis = (patientRecord.ai_analysis ?? null) as any;
   const mergedAiAnalysis = (predictedAiAnalysis ?? aiAnalysis) as any;
 
   const initialExamSources = useMemo(() => {
@@ -58,26 +57,21 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
       return [];
     }
 
-    const filename = displayMriFile.filename;
-    const urls = filename.startsWith('http://') || filename.startsWith('https://')
-      ? [filename]
-      : [
-          `${apiBaseUrl}/patients/${patient.id}/mri-file`,
-          `${apiBaseUrl}/patients/${patient.id}/mri`,
-          `${apiBaseUrl}/files/${encodeURIComponent(filename)}`,
-          `${apiBaseUrl}/media/${encodeURIComponent(filename)}`,
-          `${apiBaseUrl}/uploads/${encodeURIComponent(filename)}`,
-        ];
+    const apiOrigin = import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000';
+    const resolvedUrl = displayMriFile.url ?? `/patients/${patient.id}/mri-file`;
+    const url = resolvedUrl.startsWith('http://') || resolvedUrl.startsWith('https://')
+      ? resolvedUrl
+      : new URL(resolvedUrl, apiOrigin).toString();
 
     return [
       {
-        id: filename,
-        label: filename,
+        id: displayMriFile.filename,
+        label: displayMriFile.filename,
         description: `${displayMriFile.content_type} • ${displayMriFile.size} bytes`,
-        source: { type: 'url' as const, urls },
+        source: { type: 'url' as const, url },
       },
     ];
-  }, [apiBaseUrl, displayMriFile, patient.id]);
+  }, [displayMriFile, patient.id]);
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3.5 }} id="patient-profile-root">
