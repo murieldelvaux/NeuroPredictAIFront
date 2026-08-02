@@ -76,7 +76,6 @@ export function useClinicalWorkflow({ onComplete, onError }: WorkflowCallbacks) 
       medications: medicationsList,
       symptoms: symptomsList,
     },
-    education_years: educationYears,
   });
 
   const buildPredictPayload = (patientId: string): PredictPayload => ({

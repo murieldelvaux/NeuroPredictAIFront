@@ -19,10 +19,6 @@ export const createPatient = (
     formData.append('clinical_data', JSON.stringify(payload.clinical_data));
   }
 
-  if (payload.education_years != null) {
-    formData.append('education_years', String(payload.education_years));
-  }
-
   if (mriFile instanceof File) {
     formData.append('mri_file', mriFile);
   }

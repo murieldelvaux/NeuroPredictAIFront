@@ -40,7 +40,8 @@ export function useDoctorDashboard(patients: PatientResponse[]) {
       const status = getPatientStatus(p);
       const matchesSearch =
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (p.mrn ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+        // TODO: campo não existe no backend; mantido para preservar a UI legada.
+        ((p as any).mrn ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.id.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesRisk = riskFilter === 'ALL' || category === riskFilter;
       const matchesStatus = statusFilter === 'ALL' || status === statusFilter;

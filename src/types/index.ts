@@ -10,9 +10,6 @@ export type {
   PatientResponse,
   PatientDetailResponse,
   PatientLastPrediction,
-  PatientExamResponse,
-  PatientImagingAnalysisResponse,
-  PatientAIAnalysisResponse,
   HealthResponse,
 } from './api/patient.api.types';
 export type { PredictionResponse, PredictPayload, FeatureImportanceResponse } from './api/prediction.api.types';

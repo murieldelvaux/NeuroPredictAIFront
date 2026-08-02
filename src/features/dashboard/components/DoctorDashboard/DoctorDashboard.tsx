@@ -256,7 +256,8 @@ export default function DoctorDashboard({
                       <TableCell sx={{ py: 1.5 }}>
                         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                           <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'text.secondary', fontWeight: 'bold' }}>{p.id.toUpperCase()}</Typography>
-                          <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontSize: '9px' }}>{p.mrn ?? '—'}</Typography>
+                          {/* TODO: campo não existe no backend; mantido para preservar a UI legada. */}
+                          <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontSize: '9px' }}>{(p as any).mrn ?? '—'}</Typography>
                         </Box>
                       </TableCell>
                       <TableCell sx={{ py: 1.5 }}>
