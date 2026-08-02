@@ -19,6 +19,11 @@ const getPatientRiskCategory = (patient: PatientResponse) =>
 const getPatientStatus = (patient: PatientResponse): PatientStatus =>
   patient.last_prediction ? 'Completed' : 'Pending Interpretation';
 
+const getPatientDisplayMrn = (patient: PatientResponse) => {
+  const mrn = (patient as any).mrn;
+  return typeof mrn === 'string' && mrn.trim() ? mrn : '—';
+};
+
 export function useDoctorDashboard(patients: PatientResponse[]) {
   const [searchTerm, setSearchTerm] = useState('');
   const [riskFilter, setRiskFilter] = useState<'ALL' | RiskCategory>('ALL');
@@ -40,14 +45,52 @@ export function useDoctorDashboard(patients: PatientResponse[]) {
       const status = getPatientStatus(p);
       const matchesSearch =
         p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        // TODO: campo não existe no backend; mantido para preservar a UI legada.
-        ((p as any).mrn ?? '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.id.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesRisk = riskFilter === 'ALL' || category === riskFilter;
       const matchesStatus = statusFilter === 'ALL' || status === statusFilter;
       return matchesSearch && matchesRisk && matchesStatus;
     });
   }, [patients, searchTerm, riskFilter, statusFilter]);
+
+  const tableRows = useMemo(() => {
+    return filteredPatients.map((patient) => {
+      const classification = (patient.last_prediction?.classification ?? '').toLowerCase();
+      const riskScore = Math.round((patient.last_prediction?.risk_score ?? 0) * 100);
+      const normalizedCategory = classification === 'ad'
+        ? 'High'
+        : classification === 'mci'
+          ? 'Moderate'
+          : classification === 'cn'
+            ? 'Low'
+            : riskScore >= 60
+              ? 'High'
+              : riskScore >= 30
+                ? 'Moderate'
+                : 'Unknown';
+
+      const riskConfig = ({
+        High: { color: 'error' as const, label: `High (${riskScore}%)` },
+        Moderate: { color: 'warning' as const, label: `Moderate (${riskScore}%)` },
+        Low: { color: 'success' as const, label: `Low (${riskScore}%)` },
+        Unknown: { color: 'default' as const, label: `Unknown (${riskScore}%)` },
+      } as Record<string, { color: 'error' | 'warning' | 'success' | 'default'; label: string }>)[normalizedCategory];
+
+      const status: PatientStatus = patient.last_prediction ? 'Completed' : 'Pending Interpretation';
+      const statusColor = ({
+        Completed: 'success' as const,
+        'Pending Interpretation': 'primary' as const,
+      } as Record<string, 'success' | 'primary'>)[status];
+
+      return {
+        patient,
+        displayMrn: getPatientDisplayMrn(patient),
+        riskLabel: riskConfig.label,
+        riskColor: riskConfig.color,
+        status,
+        statusColor,
+      };
+    });
+  }, [filteredPatients]);
 
   return {
     searchTerm,
@@ -57,6 +100,7 @@ export function useDoctorDashboard(patients: PatientResponse[]) {
     statusFilter,
     setStatusFilter,
     filteredPatients,
+    tableRows,
     ...stats,
   };
 }
