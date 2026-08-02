@@ -19,7 +19,7 @@ import { queryClient } from './lib/react-query/react-query';
 import type { AppView, ToastMessage } from './types';
 
 // Feature-local imports (new pattern)
-import Layout from './features/components/Layout/Layout';
+import Layout from './components/Layout/Layout';
 import DoctorDashboard from './features/dashboard/components/DoctorDashboard/DoctorDashboard';
 import ClinicalWorkflow from './features/clinical-workflow/components/ClinicalWorkflow/ClinicalWorkflow';
 

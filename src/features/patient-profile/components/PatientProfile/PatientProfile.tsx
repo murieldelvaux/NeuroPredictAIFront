@@ -5,9 +5,9 @@ import { PatientProfileProps } from '../../types';
 import { usePatientProfile } from '../../hooks/usePatientProfile';
 import ExamViewer from '../../../../components/ExamViewer/ExamViewer';
 import PatientHeader from '../PatientHeader/PatientHeader';
-import ClinicalDataPanel from '../ClinicalDataPanel/ClinicalDataPanel';
 import PredictionPanel from '../PredictionPanel/PredictionPanel';
 import FeatureImportanceChart from '../FeatureImportanceChart/FeatureImportanceChart';
+import ClinicalDataPanel from '../ClinicalDataPanel/ClinicalDataPanel';
 
 export default function PatientProfile({ patientRecord, onBack }: PatientProfileProps) {
   const theme = useTheme();
@@ -47,7 +47,6 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
               </Box>
             </Box>
           </Paper>
-          <ClinicalDataPanel clinicalData={clinicalData} />
         </Box>
 
         <Paper variant="outlined" sx={{ borderRadius: 2, overflow: 'hidden' }}>
@@ -60,12 +59,7 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
           </Box>
 
           <Box sx={{ p: { xs: 2, md: 3 } }}>
-            {activeTab === 'clinical' && (
-              <Paper variant="outlined" sx={{ p: 2.5, borderRadius: 2 }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'bold', mb: 1 }}>Painel clínico</Typography>
-                <Typography variant="body2" color="text.secondary">Os scores resumidos estão destacados no painel lateral para manter a leitura limpa da aba.</Typography>
-              </Paper>
-            )}
+            {activeTab === 'clinical' && <ClinicalDataPanel clinicalData={clinicalData} />}
             {activeTab === 'imaging' && <ExamViewer title="Visualizador NiiVue do exame" description="Abra o exame salvo do paciente e carregue novos arquivos localmente no mesmo canvas." initialExams={initialExamSources} emptyStateTitle="Nenhum exame estruturado disponível" emptyStateDescription="Se o backend ainda não expôs o arquivo NIfTI do paciente, use o upload para carregar um `.nii` ou `.nii.gz`." height={620} />}
             {activeTab === 'ai' && (
               <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>

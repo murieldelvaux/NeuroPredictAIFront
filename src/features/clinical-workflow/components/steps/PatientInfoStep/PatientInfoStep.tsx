@@ -8,11 +8,13 @@ type PatientInfoStepProps = {
   age: number;
   sex: PatientSex;
   dateOfBirth: string;
+  educationYears: number;
   onFirstNameChange: (value: string) => void;
   onLastNameChange: (value: string) => void;
   onAgeChange: (value: number) => void;
   onSexChange: (value: PatientSex) => void;
   onDateOfBirthChange: (value: string) => void;
+  onEducationYearsChange: (value: number) => void;
 };
 
 export default function PatientInfoStep({
@@ -21,11 +23,13 @@ export default function PatientInfoStep({
   age,
   sex,
   dateOfBirth,
+  educationYears,
   onFirstNameChange,
   onLastNameChange,
   onAgeChange,
   onSexChange,
   onDateOfBirthChange,
+  onEducationYearsChange,
 }: PatientInfoStepProps) {
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }} id="workflow-step-one">
@@ -46,6 +50,7 @@ export default function PatientInfoStep({
           </Select>
         </FormControl>
         <TextField label="DATA DE NASCIMENTO" type="date" fullWidth size="small" value={dateOfBirth} onChange={(e) => onDateOfBirthChange(e.target.value)} slotProps={{ inputLabel: { shrink: true } }} />
+        <TextField label="ANOS DE ESTUDO" type="number" fullWidth size="small" value={educationYears} onChange={(e) => onEducationYearsChange(Math.max(0, parseInt(e.target.value) || 0))} slotProps={{ inputLabel: { shrink: true } }} />
       </Box>
     </Box>
   );

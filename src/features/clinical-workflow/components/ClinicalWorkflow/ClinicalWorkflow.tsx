@@ -1,7 +1,12 @@
 import React from 'react';
 import { Box, Button, Paper, Typography } from '@mui/material';
 import { ClinicalWorkflowProps } from '../../types';
-import { useClinicalWorkflow } from '@/src/hooks/useClinicalWorkflow';
+import { useClinicalWorkflow } from '../../hooks/useClinicalWorkflow';
+import { useDemographicsForm } from '../../hooks/useDemographicsForm';
+import { useClinicalHistoryForm } from '../../hooks/useClinicalHistoryForm';
+import { useCognitiveTestsForm } from '../../hooks/useCognitiveTestsForm';
+import { useImagingForm } from '../../hooks/useImagingForm';
+import { useWorkflowSubmit } from '../../hooks/useWorkflowSubmit';
 import StepIndicator from '../shared/StepIndicator/StepIndicator';
 import WorkflowActions from '../shared/WorkflowActions/WorkflowActions';
 import PatientInfoStep from '../steps/PatientInfoStep/PatientInfoStep';
@@ -11,40 +16,55 @@ import MRIUploadStep from '../steps/MRIUploadStep/MRIUploadStep';
 import AIAnalysisStep from '../steps/AIAnalysisStep/AIAnalysisStep';
 import WorkflowReviewStep from '../steps/WorkflowReviewStep/WorkflowReviewStep';
 
-const stepsMetadata = [
-  { label: 'Dados demográficos' },
-  { label: 'Dados clínicos' },
-  { label: 'Comorbidades' },
-  { label: 'MRI' },
-  { label: 'IA' },
-  { label: 'Confirmar resultados' },
-];
+const stepsMetadata = [{ label: 'Dados demográficos' }, { label: 'Dados clínicos' }, { label: 'Comorbidades' }, { label: 'MRI' }, { label: 'IA' }, { label: 'Confirmar resultados' }];
 
 export default function ClinicalWorkflow({ onComplete, onError, onCancel }: ClinicalWorkflowProps) {
-  const workflow = useClinicalWorkflow({ onComplete, onError });
+  const navigation = useClinicalWorkflow();
+  const demographics = useDemographicsForm();
+  const history = useClinicalHistoryForm();
+  const cognitive = useCognitiveTestsForm();
+  const imaging = useImagingForm();
 
-  const renderStep = () => {
-    switch (workflow.step) {
-      case 1:
-        return <PatientInfoStep firstName={workflow.firstName} lastName={workflow.lastName} age={workflow.age} sex={workflow.sex} dateOfBirth={workflow.date_of_birth} onFirstNameChange={workflow.setFirstName} onLastNameChange={workflow.setLastName} onAgeChange={workflow.setAge} onSexChange={workflow.setSex} onDateOfBirthChange={workflow.setDateOfBirth} />;
-      case 2:
-        return <ClinicalDataStep educationYears={workflow.educationYears} mmseScore={workflow.mmseScore} mocaScore={workflow.mocaScore} cdrScore={workflow.cdrScore} cdrtotScore={workflow.cdrtotScore} onEducationYearsChange={workflow.setEducationYears} onMmseChange={workflow.setMmseScore} onMocaChange={workflow.setMocaScore} onCdrChange={workflow.setCdrScore} onCdrtotChange={workflow.setCdrtotScore} />;
-      case 3:
-        return <ComorbiditiesStep symptomsInput={workflow.symptomsInput} symptomsList={workflow.symptomsList} selectedRiskFactors={workflow.selectedRiskFactors} selectedComorbidities={workflow.selectedComorbidities} medicationsInput={workflow.medicationsInput} medicationsList={workflow.medicationsList} hasFamilyHistory={workflow.hasFamilyHistory} familyRelation={workflow.familyRelation} dementiaCount={workflow.dementiaCount} onSymptomsInputChange={workflow.setSymptomsInput} onAddSymptom={workflow.addSymptom} onRemoveSymptom={workflow.removeSymptom} onToggleRiskFactor={workflow.toggleRiskFactor} onToggleComorbidity={workflow.toggleComorbidity} onMedicationsInputChange={workflow.setMedicationsInput} onAddMedication={workflow.addMedication} onRemoveMedication={workflow.removeMedication} onHasFamilyHistoryChange={workflow.setHasFamilyHistory} onFamilyRelationChange={workflow.setFamilyRelation} onDementiaCountChange={workflow.setDementiaCount} />;
-      case 4:
-        return <MRIUploadStep scanType={workflow.scanType} scanDate={workflow.scanDate} radiologistNotes={workflow.radiologistNotes} customFileUploaded={workflow.customFileUploaded} onScanTypeChange={workflow.setScanType} onScanDateChange={workflow.setScanDate} onRadiologistNotesChange={workflow.setRadiologistNotes} onCustomFileChange={workflow.setCustomFileUploaded} />;
-      case 5:
-        return <AIAnalysisStep simulationRunning={workflow.simulationRunning} simulationPercentage={workflow.simulationPercentage} terminalLogs={workflow.terminalLogs} />;
-      case 6:
-        return <WorkflowReviewStep firstName={workflow.firstName} lastName={workflow.lastName} dateOfBirth={workflow.date_of_birth} age={workflow.age} sex={workflow.sex} mrn={workflow.mrn} mmseScore={workflow.mmseScore} mocaScore={workflow.mocaScore} cdrScore={workflow.cdrScore} />;
-      default:
-        return null;
-    }
-  };
+  const submit = useWorkflowSubmit({
+    step: navigation.step,
+    goToStep: navigation.goToStep,
+    firstName: demographics.firstName,
+    lastName: demographics.lastName,
+    age: demographics.age,
+    sex: demographics.sex,
+    dateOfBirth: demographics.dateOfBirth,
+    educationYears: demographics.educationYears,
+    symptomsList: history.symptomsList,
+    hasFamilyHistory: history.hasFamilyHistory,
+    selectedRiskFactors: history.selectedRiskFactors,
+    selectedComorbidities: history.selectedComorbidities,
+    medicationsList: history.medicationsList,
+    mmseScore: cognitive.mmseScore,
+    mocaScore: cognitive.mocaScore,
+    cdrScore: cognitive.cdrScore,
+    cdrtotScore: cognitive.cdrtotScore,
+    customFileUploaded: imaging.customFileUploaded,
+    onComplete,
+    onError,
+  });
 
-  const primaryLabel = workflow.step === 4 ? 'Salvar' : workflow.step === 5 ? 'Executar IA' : workflow.step === 6 ? 'Concluir' : 'Próxima etapa';
-  const primaryColor = workflow.step === 4 || workflow.step === 6 ? 'success' : 'secondary';
-  const handlePrimaryAction = workflow.step === 5 ? workflow.runAIPipeline : workflow.step === 6 ? workflow.submitWorkflow : workflow.handleNextStep;
+  const stepContent = navigation.step === 1
+    ? <PatientInfoStep firstName={demographics.firstName} lastName={demographics.lastName} age={demographics.age} sex={demographics.sex} dateOfBirth={demographics.dateOfBirth} educationYears={demographics.educationYears} onFirstNameChange={demographics.setFirstName} onLastNameChange={demographics.setLastName} onAgeChange={demographics.setAge} onSexChange={demographics.setSex} onDateOfBirthChange={demographics.setDateOfBirth} onEducationYearsChange={demographics.setEducationYears} />
+    : navigation.step === 2
+      ? <ClinicalDataStep mmseScore={cognitive.mmseScore} mocaScore={cognitive.mocaScore} cdrScore={cognitive.cdrScore} cdrtotScore={cognitive.cdrtotScore} onMmseChange={cognitive.setMmseScore} onMocaChange={cognitive.setMocaScore} onCdrChange={cognitive.setCdrScore} onCdrtotChange={cognitive.setCdrtotScore} />
+      : navigation.step === 3
+        ? <ComorbiditiesStep symptomsInput={history.symptomsInput} symptomsList={history.symptomsList} selectedRiskFactors={history.selectedRiskFactors} selectedComorbidities={history.selectedComorbidities} medicationsInput={history.medicationsInput} medicationsList={history.medicationsList} hasFamilyHistory={history.hasFamilyHistory} familyRelation={history.familyRelation} dementiaCount={history.dementiaCount} onSymptomsInputChange={history.setSymptomsInput} onAddSymptom={history.addSymptom} onRemoveSymptom={history.removeSymptom} onToggleRiskFactor={history.toggleRiskFactor} onToggleComorbidity={history.toggleComorbidity} onMedicationsInputChange={history.setMedicationsInput} onAddMedication={history.addMedication} onRemoveMedication={history.removeMedication} onHasFamilyHistoryChange={history.setHasFamilyHistory} onFamilyRelationChange={history.setFamilyRelation} onDementiaCountChange={history.setDementiaCount} />
+        : navigation.step === 4
+          ? <MRIUploadStep scanType={imaging.scanType} scanDate={imaging.scanDate} radiologistNotes={imaging.radiologistNotes} customFileUploaded={imaging.customFileUploaded} onScanTypeChange={imaging.setScanType} onScanDateChange={imaging.setScanDate} onRadiologistNotesChange={imaging.setRadiologistNotes} onCustomFileChange={imaging.setCustomFileUploaded} />
+          : navigation.step === 5
+            ? <AIAnalysisStep simulationRunning={submit.simulationRunning} simulationPercentage={submit.simulationPercentage} terminalLogs={submit.terminalLogs} />
+            : navigation.step === 6
+              ? <WorkflowReviewStep firstName={demographics.firstName} lastName={demographics.lastName} dateOfBirth={demographics.dateOfBirth} age={demographics.age} sex={demographics.sex} mrn={demographics.mrn} mmseScore={cognitive.mmseScore} mocaScore={cognitive.mocaScore} cdrScore={cognitive.cdrScore} />
+              : null;
+
+  const primaryLabel = navigation.step === 4 ? 'Salvar' : navigation.step === 5 ? 'Executar IA' : navigation.step === 6 ? 'Concluir' : 'Próxima etapa';
+  const primaryColor = navigation.step === 4 || navigation.step === 6 ? 'success' : 'secondary';
+  const handlePrimaryAction = navigation.step === 5 ? submit.runAIPipeline : navigation.step === 6 ? submit.submitWorkflow : submit.handleNextStep;
 
   return (
     <Paper variant="outlined" id="workflow-wizard-wrapper" sx={{ p: { xs: 2.5, md: 4 }, borderRadius: 3, display: 'flex', flexDirection: 'column', gap: 3.5 }}>
@@ -58,9 +78,17 @@ export default function ClinicalWorkflow({ onComplete, onError, onCancel }: Clin
         </Button>
       </Box>
 
-      <StepIndicator currentStep={workflow.step} steps={stepsMetadata} />
-      {renderStep()}
-      <WorkflowActions currentStep={workflow.step} isWorkflowBusy={workflow.isWorkflowBusy} canGoBack={workflow.step > 1} primaryLabel={primaryLabel} primaryColor={primaryColor} onBack={() => workflow.setStep(workflow.step - 1)} onPrimaryAction={handlePrimaryAction} />
+      <StepIndicator currentStep={navigation.step} steps={stepsMetadata} />
+      {stepContent}
+      <WorkflowActions
+        currentStep={navigation.step}
+        isWorkflowBusy={submit.isWorkflowBusy}
+        canGoBack={navigation.step > 1}
+        primaryLabel={primaryLabel}
+        primaryColor={primaryColor}
+        onBack={() => navigation.goToStep(navigation.step - 1)}
+        onPrimaryAction={handlePrimaryAction}
+      />
     </Paper>
   );
 }
