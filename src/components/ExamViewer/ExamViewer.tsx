@@ -29,9 +29,53 @@ export type ExamViewerProps = {
   height?: number | string;
   emptyStateTitle?: string;
   emptyStateDescription?: string;
+  uploadButtonLabel?: string;
+  onFilesSelected?: (files: File[]) => void | Promise<void>;
 };
 
 const createExamId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+const isGzipBuffer = (buffer: ArrayBuffer) => {
+  const bytes = new Uint8Array(buffer, 0, Math.min(buffer.byteLength, 4));
+  return bytes.length >= 2 && bytes[0] === 0x1f && bytes[1] === 0x8b;
+};
+
+const inferExamFileName = (candidateUrl: string, label: string, buffer: ArrayBuffer, contentType: string | null) => {
+  const fromUrl = (() => {
+    try {
+      const url = new URL(candidateUrl, window.location.href);
+      return decodeURIComponent(url.pathname.split('/').pop() ?? '');
+    } catch {
+      return '';
+    }
+  })();
+
+  const baseName = fromUrl || label || 'exam.nii';
+
+  if (isGzipBuffer(buffer) || (contentType ?? '').includes('gzip')) {
+    if (/\.nii\.gz$/i.test(baseName)) {
+      return baseName;
+    }
+
+    if (/\.nii$/i.test(baseName)) {
+      return baseName.replace(/\.nii$/i, '.nii.gz');
+    }
+
+    return `${baseName}.nii.gz`;
+  }
+
+  if (/\.(nii|hdr|img)$/i.test(baseName)) {
+    return baseName;
+  }
+
+  return `${baseName}.nii`;
+};
+
+const clearLoadedVolumes = (viewer: Niivue) => {
+  while (viewer.volumes.length > 0) {
+    viewer.removeVolumeByIndex(viewer.volumes.length - 1);
+  }
+};
 
 export default function ExamViewer({
   title = 'Visualizador de exames',
@@ -42,6 +86,8 @@ export default function ExamViewer({
   height = 560,
   emptyStateTitle = 'Nenhum exame carregado',
   emptyStateDescription = 'Use o botão de envio para carregar um arquivo de exame e alternar entre os exames disponíveis.',
+  uploadButtonLabel = 'Carregar novos exames',
+  onFilesSelected,
 }: ExamViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const viewerRef = useRef<Niivue | null>(null);
@@ -52,6 +98,7 @@ export default function ExamViewer({
   const [isViewerReady, setIsViewerReady] = useState(false);
   const [isLoadingExam, setIsLoadingExam] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [isUploadingFiles, setIsUploadingFiles] = useState(false);
 
   const activeExam = useMemo(
     () => examItems.find((exam) => exam.id === activeExamId) ?? null,
@@ -92,13 +139,29 @@ export default function ExamViewer({
       setLoadError(null);
 
       try {
+        clearLoadedVolumes(viewer);
+
         if (activeExam.source.type === 'file') {
           await viewer.loadFromFile(activeExam.source.file);
         } else {
           let lastError: unknown = null;
           for (const candidateUrl of activeExam.source.urls) {
             try {
-              await viewer.loadFromUrl(candidateUrl);
+              const response = await fetch(candidateUrl);
+
+              if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+              }
+
+              const buffer = await response.arrayBuffer();
+              const inferredName = inferExamFileName(
+                candidateUrl,
+                activeExam.label,
+                buffer,
+                response.headers.get('content-type'),
+              );
+
+              await viewer.loadFromArrayBuffer(buffer, inferredName);
               lastError = null;
               break;
             } catch (candidateError) {
@@ -149,6 +212,15 @@ export default function ExamViewer({
     setExamItems((currentItems) => [...currentItems, ...nextExams]);
     setActiveExamId(nextExams[nextExams.length - 1]?.id ?? null);
     event.target.value = '';
+
+    if (onFilesSelected) {
+      const uploadResult = onFilesSelected(selectedFiles);
+
+      if (uploadResult && typeof uploadResult.then === 'function') {
+        setIsUploadingFiles(true);
+        void uploadResult.finally(() => setIsUploadingFiles(false));
+      }
+    }
   };
 
   return (
@@ -285,7 +357,7 @@ export default function ExamViewer({
         <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 1.5, alignItems: { xs: 'stretch', sm: 'center' } }}>
           <input ref={fileInputRef} type="file" accept={accept} multiple onChange={handleFileSelection} style={{ display: 'none' }} />
           <Button variant="contained" color="primary" startIcon={<UploadIcon />} onClick={handleUpload} sx={{ fontWeight: 700 }}>
-            Carregar novos exames
+            {isUploadingFiles ? 'Enviando imagem...' : uploadButtonLabel}
           </Button>
           <Typography variant="caption" color="text.secondary">
             Envie arquivos `.nii` ou `.nii.gz` para alternar entre diferentes exames no mesmo viewer.
