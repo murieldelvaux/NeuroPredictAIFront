@@ -4,11 +4,11 @@ import type { PatientResponse } from '../../../../types';
 
 type PatientHeaderProps = {
   patient: PatientResponse;
-  displayMrn: string;
+  displayRecordId: string;
   onBack: () => void;
 };
 
-export default function PatientHeader({ patient, displayMrn, onBack }: PatientHeaderProps) {
+export default function PatientHeader({ patient, displayRecordId, onBack }: PatientHeaderProps) {
   return (
     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: 1, borderColor: 'divider', pb: 1.5 }}>
       <Button variant="outlined" size="small" onClick={onBack} startIcon={<ArrowLeftIcon />} sx={{ fontWeight: 'bold', textTransform: 'none', borderColor: 'divider', color: 'text.secondary' }}>
@@ -20,7 +20,7 @@ export default function PatientHeader({ patient, displayMrn, onBack }: PatientHe
       </Box>
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
         <Typography variant="caption" color="text.secondary" sx={{ fontWeight: 'bold' }}>{patient.name}</Typography>
-        <Typography variant="caption" color="text.secondary">Registro: {displayMrn}</Typography>
+        <Typography variant="caption" color="text.secondary">Registro: {displayRecordId}</Typography>
       </Box>
     </Box>
   );

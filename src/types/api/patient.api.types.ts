@@ -25,7 +25,7 @@ export type ClinicalDataPayload = {
   medications: string[];
   family_history?: boolean | null;
   education_years?: number | null;
-  mri_file?: MRIFileMetadata | null;
+  mri_file?: MRIFileMetadata[] | null;
 };
 
 export type PatientCreatePayload = {
