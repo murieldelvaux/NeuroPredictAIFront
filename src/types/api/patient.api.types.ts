@@ -7,6 +7,36 @@ export type HealthResponse = {
   version: string;
 };
 
+export type ValidatedDiagnosisType = 'CN' | 'MCI' | 'DEM' | 'AD';
+
+export type ValidateDiagnosisPayload = {
+  diagnosis: 'CN' | 'MCI' | 'DEM';
+};
+
+export type CognitiveHistoryItem = {
+  date: string;
+  mmse?: number | null;
+  moca?: number | null;
+  cdr?: number | null;
+  cdrtot?: number | null;
+  notes?: string | null;
+};
+
+export type UpdateClinicalDataPayload = {
+  assessment_date: string;
+  mmse?: number | null;
+  moca?: number | null;
+  cdr?: number | null;
+  cdrtot?: number | null;
+  symptoms?: string[];
+  medications?: string[];
+  comorbidities?: string[];
+  biomarkers?: string[];
+  family_history?: boolean | null;
+  education_years?: number | null;
+  notes?: string | null;
+};
+
 export type MRIFileMetadata = {
   filename: string;
   content_type: string;
@@ -26,6 +56,7 @@ export type ClinicalDataPayload = {
   family_history?: boolean | null;
   education_years?: number | null;
   mri_file?: MRIFileMetadata[] | null;
+  cognitive_history?: CognitiveHistoryItem[] | null;
 };
 
 export type PatientCreatePayload = {
@@ -50,6 +81,8 @@ export type PatientResponse = {
   sex: 'M' | 'F' | 'Male' | 'Female';
   date_of_birth?: string | null;
   created_at: string;
+  validated_diagnosis?: ValidatedDiagnosisType | string | null;
+  validated_at?: string | null;
   last_prediction?: PatientLastPrediction | null;
   clinical_data?: ClinicalDataPayload | null;
 };
@@ -58,3 +91,4 @@ export type PatientDetailResponse = {
   patient: PatientResponse;
   predictions?: PredictionResponse[];
 };
+
