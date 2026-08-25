@@ -59,7 +59,24 @@ export const patientApiService = {
       body: JSON.stringify(payload),
     });
   },
+
+  /** POST /patients/{patient_id}/validate-diagnosis — confirms ground-truth diagnosis */
+  validateDiagnosis(id: string, diagnosis: 'CN' | 'MCI' | 'DEM'): Promise<PatientResponse> {
+    return apiFetch<PatientResponse>(`/patients/${id}/validate-diagnosis`, {
+      method: 'POST',
+      body: JSON.stringify({ diagnosis }),
+    });
+  },
+
+  /** PATCH /patients/{patient_id}/clinical-data — updates clinical context and cognitive history */
+  updateClinicalData(id: string, payload: any): Promise<PatientResponse> {
+    return apiFetch<PatientResponse>(`/patients/${id}/clinical-data`, {
+      method: 'PATCH',
+      body: JSON.stringify(payload),
+    });
+  },
 };
+
 
 // ─── Prediction ──────────────────────────────────────────────────────────
 

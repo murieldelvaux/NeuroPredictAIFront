@@ -11,5 +11,10 @@ export type {
   PatientDetailResponse,
   PatientLastPrediction,
   HealthResponse,
+  ValidatedDiagnosisType,
+  ValidateDiagnosisPayload,
+  CognitiveHistoryItem,
+  UpdateClinicalDataPayload,
 } from './api/patient.api.types';
 export type { PredictionResponse, PredictPayload, FeatureImportanceResponse } from './api/prediction.api.types';
+
