@@ -26,6 +26,9 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
     uploadMriAndPredict,
     mriUploading,
     uploadError,
+    selectedExamId,
+    setSelectedExamId,
+    selectedExam,
   } = usePatientProfile(patientRecord, apiBaseUrl);
 
   if (!patientRecord || !patient) {
@@ -103,6 +106,12 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
                 title="Visualizador NiiVue do exame"
                 description="Abra o exame salvo do paciente e carregue novos arquivos localmente no mesmo canvas."
                 initialExams={initialExamSources}
+                selectedExamId={selectedExamId}
+                onExamChange={(exam) => {
+                  if (exam) {
+                    setSelectedExamId(exam.id);
+                  }
+                }}
                 emptyStateTitle="Nenhum exame estruturado disponível"
                 emptyStateDescription="Se o backend ainda não expôs o arquivo NIfTI do paciente, use o upload para carregar um `.nii` ou `.nii.gz`."
                 height={620}
@@ -119,6 +128,69 @@ export default function PatientProfile({ patientRecord, onBack }: PatientProfile
 
           {activeTab === 'ai' && (
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2.5 }}>
+              {initialExamSources.length > 0 && (
+                <Paper
+                  variant="outlined"
+                  sx={{
+                    p: 2,
+                    borderRadius: 2.5,
+                    bgcolor: theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.08)' : 'rgba(99, 102, 241, 0.04)',
+                    borderColor: theme.palette.mode === 'dark' ? 'rgba(99, 102, 241, 0.25)' : 'rgba(99, 102, 241, 0.2)',
+                    display: 'flex',
+                    flexDirection: { xs: 'column', sm: 'row' },
+                    alignItems: { xs: 'flex-start', sm: 'center' },
+                    justifyContent: 'space-between',
+                    gap: 1.5,
+                  }}
+                >
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                    <BrainIcon sx={{ color: 'primary.main', fontSize: 20 }} />
+                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                      Exame selecionado para explicabilidade:
+                    </Typography>
+                  </Box>
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                    {initialExamSources.map((exam, idx) => {
+                      const isSelected = selectedExamId
+                        ? exam.id === selectedExamId
+                        : idx === initialExamSources.length - 1;
+                      return (
+                        <Box
+                          key={exam.id}
+                          component="button"
+                          onClick={() => setSelectedExamId(exam.id)}
+                          sx={{
+                            px: 1.5,
+                            py: 0.5,
+                            borderRadius: 1.5,
+                            border: '1px solid',
+                            fontSize: '12px',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 0.75,
+                            bgcolor: isSelected
+                              ? 'primary.main'
+                              : theme.palette.mode === 'dark'
+                              ? 'rgba(255,255,255,0.05)'
+                              : '#ffffff',
+                            color: isSelected ? '#ffffff' : 'text.primary',
+                            borderColor: isSelected ? 'primary.main' : 'divider',
+                            transition: 'all 0.15s ease',
+                            '&:hover': {
+                              borderColor: 'primary.main',
+                            },
+                          }}
+                        >
+                          {exam.label}
+                        </Box>
+                      );
+                    })}
+                  </Box>
+                </Paper>
+              )}
+
               <PredictionPanel prediction={prediction} />
               <PredictionProbabilityChart prediction={currentPrediction} />
               <FeatureImportanceChart explanation={currentPrediction?.explanation} />

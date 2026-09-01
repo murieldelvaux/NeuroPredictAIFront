@@ -31,6 +31,8 @@ export type ExamViewerProps = {
   emptyStateDescription?: string;
   uploadButtonLabel?: string;
   onFilesSelected?: (files: File[]) => void | Promise<void>;
+  selectedExamId?: string | null;
+  onExamChange?: (exam: ExamSource | null, index: number) => void;
 };
 
 const createExamId = () => `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -88,27 +90,43 @@ export default function ExamViewer({
   emptyStateDescription = 'Use o botão de envio para carregar um arquivo de exame e alternar entre os exames disponíveis.',
   uploadButtonLabel = 'Carregar novos exames',
   onFilesSelected,
+  selectedExamId,
+  onExamChange,
 }: ExamViewerProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const viewerRef = useRef<Niivue | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [examItems, setExamItems] = useState<ExamSource[]>(initialExams);
-  const [activeExamId, setActiveExamId] = useState<string | null>(initialExams[0]?.id ?? null);
+  const [internalActiveExamId, setInternalActiveExamId] = useState<string | null>(
+    initialExams[initialExams.length - 1]?.id ?? null,
+  );
   const [isViewerReady, setIsViewerReady] = useState(false);
   const [isLoadingExam, setIsLoadingExam] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [isUploadingFiles, setIsUploadingFiles] = useState(false);
 
+  const activeExamId = selectedExamId !== undefined && selectedExamId !== null ? selectedExamId : internalActiveExamId;
+
   const activeExam = useMemo(
-    () => examItems.find((exam) => exam.id === activeExamId) ?? null,
+    () => examItems.find((exam) => exam.id === activeExamId) ?? examItems[examItems.length - 1] ?? null,
     [activeExamId, examItems],
   );
 
   useEffect(() => {
     setExamItems(initialExams);
-    setActiveExamId(initialExams[0]?.id ?? null);
-  }, [initialExams]);
+    if (initialExams.length > 0) {
+      if (selectedExamId && initialExams.some((e) => e.id === selectedExamId)) {
+        setInternalActiveExamId(selectedExamId);
+      } else {
+        const lastExam = initialExams[initialExams.length - 1];
+        setInternalActiveExamId(lastExam?.id ?? null);
+        if (lastExam && onExamChange) {
+          onExamChange(lastExam, initialExams.length - 1);
+        }
+      }
+    }
+  }, [initialExams, selectedExamId]);
 
   useEffect(() => {
     if (!canvasRef.current || viewerRef.current) {
@@ -195,6 +213,11 @@ export default function ExamViewer({
     fileInputRef.current?.click();
   };
 
+  const handleSelectExam = (exam: ExamSource, index: number) => {
+    setInternalActiveExamId(exam.id);
+    onExamChange?.(exam, index);
+  };
+
   const handleFileSelection = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFiles = Array.from(event.target.files ?? []);
 
@@ -209,8 +232,13 @@ export default function ExamViewer({
       source: { type: 'file' as const, file },
     }));
 
-    setExamItems((currentItems) => [...currentItems, ...nextExams]);
-    setActiveExamId(nextExams[nextExams.length - 1]?.id ?? null);
+    const lastNewExam = nextExams[nextExams.length - 1];
+    const combined = [...examItems, ...nextExams];
+    setExamItems(combined);
+    setInternalActiveExamId(lastNewExam?.id ?? null);
+    if (lastNewExam) {
+      onExamChange?.(lastNewExam, combined.length - 1);
+    }
     event.target.value = '';
 
     if (onFilesSelected) {
@@ -332,12 +360,12 @@ export default function ExamViewer({
 
       <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.25 }}>
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-          {examItems.map((exam) => (
+          {examItems.map((exam, index) => (
             <Button
               key={exam.id}
               size="small"
               variant={exam.id === activeExamId ? 'contained' : 'outlined'}
-              onClick={() => setActiveExamId(exam.id)}
+              onClick={() => handleSelectExam(exam, index)}
               startIcon={<ViewerIcon />}
               sx={{ fontWeight: 700, textTransform: 'none' }}
             >

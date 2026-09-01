@@ -576,8 +576,8 @@ export default function ClinicalDataPanel({ patient, predictions = [] }: Clinica
             <AreaChart data={aiEvolutionData} margin={{ top: 10, right: 30, left: -10, bottom: 0 }}>
               <defs>
                 <linearGradient id="riskScoreGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f43f5e" stopOpacity={0.4} />
-                  <stop offset="95%" stopColor="#f43f5e" stopOpacity={0.0} />
+                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.35} />
+                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.06)'} />
@@ -622,7 +622,7 @@ export default function ClinicalDataPanel({ patient, predictions = [] }: Clinica
                             sx={{ fontWeight: 800, height: 20, fontSize: '10px' }}
                           />
                         </Box>
-                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#f43f5e', mb: 1 }}>
+                        <Typography variant="subtitle2" sx={{ fontWeight: 800, color: '#8b5cf6', mb: 1 }}>
                           Risco Estimado: {dataItem.riskScore}%
                         </Typography>
                         <Divider sx={{ my: 0.75 }} />
@@ -633,7 +633,7 @@ export default function ClinicalDataPanel({ patient, predictions = [] }: Clinica
                           <Typography variant="caption" sx={{ color: '#f59e0b', fontWeight: 700 }}>
                             Probabilidade MCI: {dataItem.probMCI}%
                           </Typography>
-                          <Typography variant="caption" sx={{ color: '#f43f5e', fontWeight: 700 }}>
+                          <Typography variant="caption" sx={{ color: '#ef4444', fontWeight: 700 }}>
                             Probabilidade DEM: {dataItem.probDEM}%
                           </Typography>
                           <Typography variant="caption" color="text.secondary" sx={{ mt: 0.5 }}>
@@ -654,9 +654,10 @@ export default function ClinicalDataPanel({ patient, predictions = [] }: Clinica
                 type="monotone"
                 dataKey="riskScore"
                 name="Risk Score (%)"
-                stroke="#f43f5e"
+                stroke="#8b5cf6"
                 strokeWidth={3}
                 fill="url(#riskScoreGrad)"
+                dot={{ r: 4, fill: '#8b5cf6' }}
               />
               <Line
                 type="monotone"
@@ -678,9 +679,9 @@ export default function ClinicalDataPanel({ patient, predictions = [] }: Clinica
                 type="monotone"
                 dataKey="probDEM"
                 name="Prob. DEM (%)"
-                stroke="#e11d48"
+                stroke="#ef4444"
                 strokeWidth={2}
-                dot={{ r: 4, fill: '#e11d48' }}
+                dot={{ r: 4, fill: '#ef4444' }}
               />
             </AreaChart>
           </ResponsiveContainer>
