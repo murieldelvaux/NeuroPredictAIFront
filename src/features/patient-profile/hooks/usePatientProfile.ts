@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { PatientDetailResponse, PredictionResponse } from '../../../types';
 import { getPatientQueryKey } from '../react-queries/useGetPatient';
@@ -21,25 +21,14 @@ export function usePatientProfile(patientRecord: PatientDetailResponse | null, a
   const [uploadedFile, setUploadedFile] = useState<string | null>(null);
   const [predictedAiAnalysis, setPredictedAiAnalysis] = useState<PredictionResponse | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [selectedExamId, setSelectedExamId] = useState<string | null>(null);
+  const [sessionExamPredictions, setSessionExamPredictions] = useState<Record<string, PredictionResponse>>({});
+
   const queryClient = useQueryClient();
   const updatePatientMriMutation = useUpdatePatientMri();
   const { mutateAsync: predictMutation } = usePredict();
 
   const patient = patientRecord?.patient ?? null;
-  const currentPrediction = useMemo(() => {
-    if (predictedAiAnalysis) {
-      return predictedAiAnalysis;
-    }
-
-    const predictions = patientRecord?.predictions ?? [];
-    if (predictions.length === 0) {
-      return null;
-    }
-
-    return [...predictions].sort(
-      (left, right) => new Date(right.prediction_date).getTime() - new Date(left.prediction_date).getTime(),
-    )[0] ?? null;
-  }, [patientRecord?.predictions, predictedAiAnalysis]);
 
   const initialExamSources = useMemo(() => {
     const mriFiles = patient?.clinical_data?.mri_file ?? [];
@@ -68,6 +57,89 @@ export function usePatientProfile(patientRecord: PatientDetailResponse | null, a
     });
   }, [apiBaseUrl, patient]);
 
+  // Set default selectedExamId to the last loaded exam whenever initialExamSources is available
+  useEffect(() => {
+    if (initialExamSources.length > 0) {
+      setSelectedExamId((prev) => {
+        if (prev && initialExamSources.some((exam) => exam.id === prev)) {
+          return prev;
+        }
+        return initialExamSources[initialExamSources.length - 1].id;
+      });
+    }
+  }, [initialExamSources]);
+
+  const chronologicalPredictions = useMemo(() => {
+    const predictions = patientRecord?.predictions ?? [];
+    return [...predictions].sort(
+      (left, right) => new Date(left.prediction_date).getTime() - new Date(right.prediction_date).getTime(),
+    );
+  }, [patientRecord?.predictions]);
+
+  const activeExamIndex = useMemo(() => {
+    if (initialExamSources.length === 0) return -1;
+    if (!selectedExamId) return initialExamSources.length - 1;
+    const idx = initialExamSources.findIndex((exam) => exam.id === selectedExamId);
+    return idx >= 0 ? idx : initialExamSources.length - 1;
+  }, [initialExamSources, selectedExamId]);
+
+  const selectedExam = useMemo(() => {
+    if (activeExamIndex >= 0 && activeExamIndex < initialExamSources.length) {
+      return initialExamSources[activeExamIndex];
+    }
+    return initialExamSources[initialExamSources.length - 1] ?? null;
+  }, [activeExamIndex, initialExamSources]);
+
+  const currentPrediction = useMemo(() => {
+    // 1. If we have a session prediction explicitly stored for this exam
+    if (selectedExamId && sessionExamPredictions[selectedExamId]) {
+      return sessionExamPredictions[selectedExamId];
+    }
+
+    // 2. Newly uploaded file in this session matching the current selected exam
+    if (predictedAiAnalysis && selectedExam?.label === uploadedFile) {
+      return predictedAiAnalysis;
+    }
+
+    // 3. Chronological match by exam index
+    if (chronologicalPredictions.length > 0) {
+      const idx = activeExamIndex >= 0 ? activeExamIndex : chronologicalPredictions.length - 1;
+      const matched = chronologicalPredictions[idx] ?? chronologicalPredictions[chronologicalPredictions.length - 1];
+      return matched ?? null;
+    }
+
+    // 4. Fallback to predictedAiAnalysis or patient.last_prediction
+    if (predictedAiAnalysis) {
+      return predictedAiAnalysis;
+    }
+
+    if (patient?.last_prediction) {
+      return {
+        patient_id: patient.id,
+        prediction_date: patient.last_prediction.prediction_date,
+        risk_score: patient.last_prediction.risk_score,
+        classification: patient.last_prediction.classification,
+        confidence: patient.last_prediction.confidence,
+        probabilities: {
+          [patient.last_prediction.classification]: patient.last_prediction.confidence,
+        },
+        explanation: null,
+        model_version: 'resnet3d-oasis3',
+      } as PredictionResponse;
+    }
+
+    return null;
+  }, [
+    activeExamIndex,
+    chronologicalPredictions,
+    patient,
+    predictedAiAnalysis,
+    selectedExam?.label,
+    selectedExamId,
+    sessionExamPredictions,
+    uploadedFile,
+  ]);
+
   const displayRecordId = patient?.id ?? '—';
 
   const uploadMriAndPredict = async (file: File) => {
@@ -79,7 +151,6 @@ export function usePatientProfile(patientRecord: PatientDetailResponse | null, a
     setMriUploading(true);
     setUploadError(null);
     setUploadedFile(file.name);
-    setActiveTab('ai');
 
     try {
       await updatePatientMriMutation.mutateAsync({ patientId: patient.id, mriFile: file });
@@ -95,6 +166,10 @@ export function usePatientProfile(patientRecord: PatientDetailResponse | null, a
       });
 
       setPredictedAiAnalysis(response);
+      const tempExamId = `${file.name}-${initialExamSources.length}`;
+      setSelectedExamId(tempExamId);
+      setSessionExamPredictions((prev) => ({ ...prev, [tempExamId]: response }));
+
       await queryClient.invalidateQueries({ queryKey: [getPatientQueryKey, patient.id] });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Erro ao processar MRI';
@@ -119,5 +194,8 @@ export function usePatientProfile(patientRecord: PatientDetailResponse | null, a
     uploadMriAndPredict,
     initialExamSources,
     displayRecordId,
+    selectedExamId,
+    setSelectedExamId,
+    selectedExam,
   };
 }
